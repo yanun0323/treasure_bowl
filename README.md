@@ -5,7 +5,7 @@ A simple crypto trading bot.
 # Requirement
 #### _Go 1.21.4 or higher_
 
-# System Design
+# Flow Design
 ```mermaid
 graph TD
     PriceProvider{"Price Provider\nInterface"}
