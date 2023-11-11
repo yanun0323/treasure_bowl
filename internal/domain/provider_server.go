@@ -5,10 +5,12 @@ import (
 	"main/internal/model"
 )
 
-type PriceProviderServer interface {
-	SubscribePrice(ctx context.Context, pair string) (<-chan model.Price, error)
+type PriceProvideServer interface {
+	Connect(ctx context.Context) (<-chan model.Price, error)
+	Disconnect(ctx context.Context) error
 }
 
-type AssetProviderServer interface {
-	SubscribeAsset(ctx context.Context) (<-chan model.Account, error)
+type AssetProvideServer interface {
+	Connect(ctx context.Context) (<-chan model.Account, error)
+	Disconnect(ctx context.Context) error
 }

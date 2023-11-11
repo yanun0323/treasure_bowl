@@ -6,5 +6,11 @@ import (
 )
 
 type StrategyServer interface {
-	PushPrice(ctx context.Context, pair string, price model.Price) error
+	Connect(ctx context.Context) (<-chan model.Order, error)
+	Disconnect(ctx context.Context) error
+
+	PushPrices(ctx context.Context, prices ...model.Price)
+	PushAssets(ctx context.Context, accounts ...model.Account)
+	PushOrders(ctx context.Context, orders ...model.Order)
+	PushSupportedOrderTypes(ctx context.Context, types ...model.OrderType)
 }
