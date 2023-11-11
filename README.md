@@ -13,9 +13,10 @@ graph TD
     Strategy{Strategy\nInterface}
     Order{Order\nInterface}
 
-    PriceProvider --->|1. Listen Price Changing| BotService
-    AssetProvider -->|2. Listen Asset Changing| BotService
-    BotService -->|3. Send Price/Asset| Strategy 
-    Strategy -->|4. Return Signal| BotService
-    BotService --->|5. Create/Cancel Order| Order
+    PriceProvider ===>|1. Listen Price Changing| BOT
+    AssetProvider ==>|2. Listen Asset Changing| BOT
+    BOT ==>|3. Push Price/Asset/Order| Strategy 
+    Strategy -->|4. Listen Signal| BOT
+    BOT -.->|5. Create/Cancel Order| Order
+    Order -.->|6. Push Order| Strategy
 ```
