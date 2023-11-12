@@ -20,3 +20,8 @@ graph TD
     BOT -.->|5. Create/Cancel Order| Order
     Order -.->|6. Push Order| Strategy
 ```
+# TODO
+- KLineProvider: victor 研究中
+- AssetProvider
+- Strategy
+- Order
