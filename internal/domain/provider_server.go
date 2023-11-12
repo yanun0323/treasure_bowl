@@ -5,8 +5,8 @@ import (
 	"main/internal/model"
 )
 
-type PriceProvideServer interface {
-	Connect(ctx context.Context) (<-chan model.Price, error)
+type KLineProvideServer interface {
+	Connect(ctx context.Context) (<-chan model.KLine, error)
 	Disconnect(ctx context.Context) error
 }
 

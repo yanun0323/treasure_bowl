@@ -17,11 +17,22 @@ const (
 	OCO
 )
 
+type OrderStatus uint8
+
+const (
+	Pending OrderStatus = iota
+	Created
+	Canceled
+	PartialComplete
+	Complete
+)
+
 type Order struct {
 	ID     string
 	Pair   string
 	Action OrderAction
 	Type   OrderType
+	Status OrderStatus
 
 	LimitOrder
 	MarketOrder

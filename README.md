@@ -8,14 +8,14 @@ A simple crypto trading bot.
 # Flow Design
 ```mermaid
 graph TD
-    PriceProvider{"Price Provider\nInterface"}
+    KLineProvider{"K-Line Provider\nInterface"}
     AssetProvider{"Asset Provider\nInterface"}
     Strategy{Strategy\nInterface}
     Order{Order\nInterface}
 
-    PriceProvider ===>|1. Listen Price Changing| BOT
+    KLineProvider ===>|1. Listen K-Line Changing| BOT
     AssetProvider ==>|2. Listen Asset Changing| BOT
-    BOT ==>|3. Push Price/Asset/Order| Strategy 
+    BOT ==>|3. Push K-Line/Asset/Order| Strategy 
     Strategy -->|4. Listen Signal| BOT
     BOT -.->|5. Create/Cancel Order| Order
     Order -.->|6. Push Order| Strategy

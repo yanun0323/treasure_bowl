@@ -6,7 +6,9 @@ import (
 )
 
 type OrderServer interface {
+	Connect(ctx context.Context) (<-chan model.Order, error)
+	DisConnect(ctx context.Context) error
+
 	SupportOrderType(ctx context.Context) ([]model.OrderType, error)
-	Orders(ctx context.Context) ([]model.Order, error)
-	PostOrder(ctx context.Context, order model.Order) ([]model.Order, error)
+	PostOrder(ctx context.Context, order model.Order) error
 }

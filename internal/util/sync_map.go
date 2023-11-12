@@ -7,6 +7,13 @@ type SyncMap[K comparable, V any] struct {
 	data map[K]V
 }
 
+func NewSyncMap[K comparable, V any]() SyncMap[K, V] {
+	return SyncMap[K, V]{
+		lock: &sync.RWMutex{},
+		data: map[K]V{},
+	}
+}
+
 func (m *SyncMap[K, V]) Load(key K) (V, bool) {
 	m.lock.RLock()
 	defer m.lock.RUnlock()
@@ -20,6 +27,13 @@ func (m *SyncMap[K, V]) Set(key K, value V) {
 	defer m.lock.Unlock()
 
 	m.data[key] = value
+}
+
+func (m *SyncMap[K, V]) LoadAndSet(key K, fn func(value V) V) {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	m.data[key] = fn(m.data[key])
 }
 
 func (m *SyncMap[K, V]) Iter(fn func(key K, value V) bool) {

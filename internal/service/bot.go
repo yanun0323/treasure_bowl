@@ -9,17 +9,21 @@ import (
 )
 
 type bot struct {
+	ID                  string
 	Pair                string
 	Log                 logs.Logger
 	OrderServer         domain.OrderServer
-	PriceProviderServer domain.PriceProvideServer
+	KLineProviderServer domain.KLineProvideServer
 	AssetProviderServer domain.AssetProvideServer
 	StrategyServer      domain.StrategyServer
 }
 
-func NewBot() (bot, error) {
+func NewBot(id string, pair string) (bot, error) {
 	// TODO: Implement me
-	return bot{}, nil
+	return bot{
+		ID:   id,
+		Pair: pair,
+	}, nil
 }
 
 func (b *bot) Run(ctx context.Context) error {
@@ -27,7 +31,7 @@ func (b *bot) Run(ctx context.Context) error {
 		return err
 	}
 
-	priceCh, err := b.PriceProviderServer.Connect(ctx)
+	kLineCh, err := b.KLineProviderServer.Connect(ctx)
 	if err != nil {
 		return err
 	}
@@ -37,14 +41,20 @@ func (b *bot) Run(ctx context.Context) error {
 		return err
 	}
 
+	orderCh, err := b.OrderServer.Connect(ctx)
+	if err != nil {
+		return err
+	}
+
 	signal, err := b.StrategyServer.Connect(ctx)
 	if err != nil {
 		return err
 	}
 
-	go consumePrice(ctx, priceCh, b.StrategyServer)
+	go consumeKLine(ctx, kLineCh, b.StrategyServer)
 	go consumeAsset(ctx, assetCh, b.StrategyServer)
-	go consumeSignal(ctx, signal, b.OrderServer, b.StrategyServer)
+	go consumeOrder(ctx, orderCh, b.StrategyServer)
+	go consumeSignal(ctx, signal, b.OrderServer)
 
 	return nil
 }
@@ -54,7 +64,7 @@ func (b *bot) Shutdown(ctx context.Context) error {
 		return err
 	}
 
-	if err := b.PriceProviderServer.Disconnect(ctx); err != nil {
+	if err := b.KLineProviderServer.Disconnect(ctx); err != nil {
 		return err
 	}
 
@@ -62,16 +72,14 @@ func (b *bot) Shutdown(ctx context.Context) error {
 		return err
 	}
 
+	if err := b.OrderServer.DisConnect(ctx); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (b *bot) setup(ctx context.Context) error {
-	orders, err := b.OrderServer.Orders(ctx)
-	if err != nil {
-		return err
-	}
-	b.StrategyServer.PushOrders(ctx, orders...)
-
 	types, err := b.OrderServer.SupportOrderType(ctx)
 	if err != nil {
 		return err
@@ -81,11 +89,11 @@ func (b *bot) setup(ctx context.Context) error {
 	return nil
 }
 
-func consumePrice(ctx context.Context, ch <-chan model.Price, strategy domain.StrategyServer) {
+func consumeKLine(ctx context.Context, ch <-chan model.KLine, strategy domain.StrategyServer) {
 	for {
 		select {
-		case price := <-ch:
-			strategy.PushPrices(ctx, price)
+		case kLine := <-ch:
+			strategy.PushKLines(ctx, kLine)
 		case <-ctx.Done():
 			return
 		}
@@ -103,16 +111,25 @@ func consumeAsset(ctx context.Context, ch <-chan model.Account, strategy domain.
 	}
 }
 
-func consumeSignal(ctx context.Context, signal <-chan model.Order, orderServer domain.OrderServer, strategy domain.StrategyServer) {
+func consumeOrder(ctx context.Context, ch <-chan model.Order, strategy domain.StrategyServer) {
+	for {
+		select {
+		case order := <-ch:
+			strategy.PushOrders(ctx, order)
+		case <-ctx.Done():
+			return
+		}
+	}
+}
+
+func consumeSignal(ctx context.Context, signal <-chan model.Order, orderServer domain.OrderServer) {
 	for {
 		select {
 		case order := <-signal:
-			orders, err := orderServer.PostOrder(ctx, order)
-			if err != nil {
+			if err := orderServer.PostOrder(ctx, order); err != nil {
 				logs.Get(ctx).Errorf("set order '%s', err: %s", order.ID, err.Error())
 				continue
 			}
-			strategy.PushOrders(ctx, orders...)
 		case <-ctx.Done():
 			return
 		}

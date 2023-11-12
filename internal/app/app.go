@@ -14,7 +14,7 @@ func Run() {
 	ctx := context.Background()
 	l := logs.New("bot", 0)
 
-	bot, err := service.NewBot()
+	bot, err := service.NewBot("General", "SOL/USDT")
 	if err != nil {
 		l.WithError(err).Fatal("create bot")
 	}

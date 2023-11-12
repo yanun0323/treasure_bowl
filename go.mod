@@ -2,7 +2,10 @@ module main
 
 go 1.21
 
-require github.com/yanun0323/pkg v1.1.0
+require (
+	github.com/yanun0323/gollection/v2 v2.1.8
+	github.com/yanun0323/pkg v1.1.0
+)
 
 require (
 	github.com/buger/jsonparser v1.1.1 // indirect
