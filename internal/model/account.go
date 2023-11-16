@@ -2,6 +2,8 @@ package model
 
 import (
 	"main/internal/util"
+
+	"github.com/yanun0323/decimal"
 )
 
 type Account struct {
@@ -15,7 +17,7 @@ func NewAccount() *Account {
 }
 
 type Balance struct {
-	Available string
-	InTrade   string
-	Locked    string
+	Available decimal.Decimal
+	InTrade   decimal.Decimal
+	Locked    decimal.Decimal
 }

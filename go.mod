@@ -3,7 +3,8 @@ module main
 go 1.21
 
 require (
-	github.com/yanun0323/gollection/v2 v2.1.8
+	github.com/yanun0323/decimal v0.0.1
+	github.com/yanun0323/gollection/v2 v2.2.0
 	github.com/yanun0323/pkg v1.1.0
 )
 

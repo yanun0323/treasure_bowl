@@ -1,5 +1,7 @@
 package model
 
+import "github.com/yanun0323/decimal"
+
 type OrderAction uint8
 
 const (
@@ -29,7 +31,7 @@ const (
 
 type Order struct {
 	ID     string
-	Pair   string
+	Pair   Pair
 	Action OrderAction
 	Type   OrderType
 	Status OrderStatus
@@ -42,31 +44,31 @@ type Order struct {
 }
 
 type LimitOrder struct {
-	Price  string
-	Amount string
+	Price  decimal.Decimal
+	Amount decimal.Decimal
 }
 
 type MarketOrder struct {
-	Amount string
-	Total  string
+	Amount decimal.Decimal
+	Total  decimal.Decimal
 }
 
 type StopLimitOrder struct {
-	Stop   string
-	Limit  string
-	Amount string
+	Stop   decimal.Decimal
+	Limit  decimal.Decimal
+	Amount decimal.Decimal
 }
 
 type TrailingStopOrder struct {
-	TrailingDelta   string
-	Limit           string
-	Amount          string
-	ActivationPrice string
+	TrailingDelta   decimal.Decimal
+	Limit           decimal.Decimal
+	Amount          decimal.Decimal
+	ActivationPrice decimal.Decimal
 }
 
 type OCOOrder struct {
-	Price  string
-	Stop   string
-	Limit  string
-	Amount string
+	Price  decimal.Decimal
+	Stop   decimal.Decimal
+	Limit  decimal.Decimal
+	Amount decimal.Decimal
 }

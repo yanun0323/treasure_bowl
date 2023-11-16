@@ -1,5 +1,7 @@
 package model
 
+import "github.com/yanun0323/decimal"
+
 type KLineType uint8
 
 const (
@@ -21,11 +23,11 @@ const (
 )
 
 type KLine struct {
-	Pair       string
-	MaxPrice   string
-	MinPrice   string
-	OpenPrice  string
-	ClosePrice string
+	Pair       Pair
+	MaxPrice   decimal.Decimal
+	MinPrice   decimal.Decimal
+	OpenPrice  decimal.Decimal
+	ClosePrice decimal.Decimal
 	StartAt    uint64
 	EndAt      uint64
 	Timestamp  uint64
