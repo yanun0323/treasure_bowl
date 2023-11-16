@@ -9,7 +9,7 @@ type StrategyServer interface {
 	Connect(ctx context.Context) (<-chan model.Order, error)
 	Disconnect(ctx context.Context) error
 
-	PushKLines(ctx context.Context, prices ...model.KLine)
+	PushKlines(ctx context.Context, prices ...model.Kline)
 	PushAssets(ctx context.Context, accounts ...model.Account)
 	PushOrders(ctx context.Context, orders ...model.Order)
 	PushSupportedOrderTypes(ctx context.Context, types ...model.OrderType)

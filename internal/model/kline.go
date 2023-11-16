@@ -2,10 +2,10 @@ package model
 
 import "github.com/yanun0323/decimal"
 
-type KLineType uint8
+type KlineType uint8
 
 const (
-	K1m KLineType = iota
+	K1m KlineType = iota
 	K3m
 	K5m
 	K15m
@@ -22,7 +22,7 @@ const (
 	K1M
 )
 
-type KLine struct {
+type Kline struct {
 	Pair       Pair
 	MaxPrice   decimal.Decimal
 	MinPrice   decimal.Decimal
@@ -31,5 +31,5 @@ type KLine struct {
 	StartAt    uint64
 	EndAt      uint64
 	Timestamp  uint64
-	Type       KLineType
+	Type       KlineType
 }

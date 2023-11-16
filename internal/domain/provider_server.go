@@ -5,8 +5,8 @@ import (
 	"main/internal/model"
 )
 
-type KLineProvideServer interface {
-	Connect(ctx context.Context) (<-chan model.KLine, error)
+type KlineProvideServer interface {
+	Connect(ctx context.Context, types ...model.KlineType) (<-chan model.Kline, error)
 	Disconnect(ctx context.Context) error
 }
 

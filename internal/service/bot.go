@@ -13,7 +13,7 @@ type bot struct {
 	Pair                string
 	Log                 logs.Logger
 	OrderServer         domain.OrderServer
-	KLineProviderServer domain.KLineProvideServer
+	KlineProviderServer domain.KlineProvideServer
 	AssetProviderServer domain.AssetProvideServer
 	StrategyServer      domain.StrategyServer
 }
@@ -31,7 +31,7 @@ func (b *bot) Run(ctx context.Context) error {
 		return err
 	}
 
-	kLineCh, err := b.KLineProviderServer.Connect(ctx)
+	klineCh, err := b.KlineProviderServer.Connect(ctx)
 	if err != nil {
 		return err
 	}
@@ -51,7 +51,7 @@ func (b *bot) Run(ctx context.Context) error {
 		return err
 	}
 
-	go consumeKLine(ctx, kLineCh, b.StrategyServer)
+	go consumeKline(ctx, klineCh, b.StrategyServer)
 	go consumeAsset(ctx, assetCh, b.StrategyServer)
 	go consumeOrder(ctx, orderCh, b.StrategyServer)
 	go consumeSignal(ctx, signal, b.OrderServer)
@@ -64,7 +64,7 @@ func (b *bot) Shutdown(ctx context.Context) error {
 		return err
 	}
 
-	if err := b.KLineProviderServer.Disconnect(ctx); err != nil {
+	if err := b.KlineProviderServer.Disconnect(ctx); err != nil {
 		return err
 	}
 
@@ -89,11 +89,11 @@ func (b *bot) setup(ctx context.Context) error {
 	return nil
 }
 
-func consumeKLine(ctx context.Context, ch <-chan model.KLine, strategy domain.StrategyServer) {
+func consumeKline(ctx context.Context, ch <-chan model.Kline, strategy domain.StrategyServer) {
 	for {
 		select {
-		case kLine := <-ch:
-			strategy.PushKLines(ctx, kLine)
+		case kline := <-ch:
+			strategy.PushKlines(ctx, kline)
 		case <-ctx.Done():
 			return
 		}

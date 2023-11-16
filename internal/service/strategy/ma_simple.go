@@ -6,64 +6,79 @@ import (
 	"main/internal/model"
 	"main/internal/util"
 	"sync"
+	"time"
 
+	"github.com/robfig/cron"
+	"github.com/spf13/viper"
 	"github.com/yanun0323/gollection/v2"
+	"github.com/yanun0323/pkg/logs"
 )
 
 type MaSimple struct {
-	assetUpdating       *sync.RWMutex
-	connecting          bool
+	l                   logs.Logger
+	updating            *sync.RWMutex
 	pair                model.Pair
 	signal              chan model.Order
-	asset               *model.Account
-	kLineTree           map[model.KLineType]gollection.SyncBTree[uint64, model.KLine]
+	asset               model.Account
+	klineTree           map[model.KlineType]gollection.SyncBTree[uint64, model.Kline]
 	supportOrderTypeMap util.SyncMap[model.OrderType, bool]
 	orderMap            util.SyncMap[model.OrderType, []model.Order]
+
+	cronJob *cron.Cron
 }
 
 func NewMaSimple(pair model.Pair) (domain.StrategyServer, error) {
 	return &MaSimple{
-		assetUpdating:       &sync.RWMutex{},
+		l:                   logs.New("strategy ma simple", viper.GetUint16("log.levels")),
+		updating:            &sync.RWMutex{},
 		pair:                pair,
 		signal:              make(chan model.Order, 10),
 		asset:               model.NewAccount(),
-		kLineTree:           map[model.KLineType]gollection.SyncBTree[uint64, model.KLine]{},
+		klineTree:           map[model.KlineType]gollection.SyncBTree[uint64, model.Kline]{},
 		supportOrderTypeMap: util.NewSyncMap[model.OrderType, bool](),
 		orderMap:            util.NewSyncMap[model.OrderType, []model.Order](),
 	}, nil
 }
 
 func (s *MaSimple) Connect(ctx context.Context) (<-chan model.Order, error) {
-	s.connecting = true
+	if s.cronJob == nil {
+		s.cronJob = cron.New()
+		s.cronJob.AddFunc("*/15 * * * * *", func() {
+			s.invokeStrategy(ctx)
+		})
+	}
+	s.cronJob.Stop()
+	s.cronJob.Run()
 	return s.signal, nil
 }
 
 func (s *MaSimple) Disconnect(ctx context.Context) error {
-	s.connecting = false
+	if s.cronJob != nil {
+		s.cronJob.Stop()
+	}
 	return nil
 }
 
-func (s *MaSimple) PushKLines(ctx context.Context, kLines ...model.KLine) {
-	for _, kLine := range kLines {
-		if s.kLineTree[kLine.Type] == nil {
-			s.kLineTree[kLine.Type] = gollection.NewSyncBTree[uint64, model.KLine]()
+func (s *MaSimple) PushKlines(ctx context.Context, klines ...model.Kline) {
+	for _, kline := range klines {
+		if s.klineTree[kline.Type] == nil {
+			s.klineTree[kline.Type] = gollection.NewSyncBTree[uint64, model.Kline]()
 		}
-		s.kLineTree[kLine.Type].Insert(kLine.Timestamp, kLine)
+		s.klineTree[kline.Type].Insert(kline.Timestamp, kline)
 	}
-	s.invokeStrategy(ctx)
 }
 
 func (s *MaSimple) PushAssets(ctx context.Context, accounts ...model.Account) {
-	s.assetUpdating.Lock()
-	defer s.assetUpdating.Unlock()
+	s.updating.Lock()
+	defer s.updating.Unlock()
 	for _, a := range accounts {
-		s.asset = &a
+		s.asset = a
 	}
 }
 
 func (s *MaSimple) PushOrders(ctx context.Context, orders ...model.Order) {
-	s.assetUpdating.Lock()
-	defer s.assetUpdating.Unlock()
+	s.updating.Lock()
+	defer s.updating.Unlock()
 	for _, order := range orders {
 		s.orderMap.LoadAndSet(order.Type, func(value []model.Order) []model.Order {
 			return append(value, order)
@@ -79,11 +94,13 @@ func (s *MaSimple) PushSupportedOrderTypes(ctx context.Context, types ...model.O
 }
 
 func (s *MaSimple) invokeStrategy(ctx context.Context) {
-	if !s.connecting {
+	if locked := s.updating.TryRLock(); !locked {
+		s.l.WithTime(time.Now()).Info("updating, skipped invoking strategy")
 		return
 	}
-	s.assetUpdating.RLock()
-	defer s.assetUpdating.RUnlock()
+	defer s.updating.RUnlock()
+
+	s.l.WithTime(time.Now()).Info("invoked strategy")
 
 	// TODO: Implement me
 }
