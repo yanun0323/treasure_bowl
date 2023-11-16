@@ -22,7 +22,7 @@ func (m *SyncMap[K, V]) Load(key K) (V, bool) {
 	return d, ok
 }
 
-func (m *SyncMap[K, V]) Set(key K, value V) {
+func (m *SyncMap[K, V]) Store(key K, value V) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 

@@ -12,7 +12,8 @@ type OrderAction uint8
 const (
 	BUY OrderAction = iota
 	SELL
-	CANCEL
+	BUY_CANCEL
+	SELL_CANCEL
 )
 
 func (a OrderAction) String() string {
@@ -21,8 +22,10 @@ func (a OrderAction) String() string {
 		return "BUY"
 	case SELL:
 		return "SELL"
-	case CANCEL:
-		return "CANCEL"
+	case BUY_CANCEL:
+		return "BUY_CANCEL"
+	case SELL_CANCEL:
+		return "SELL_CANCEL"
 	default:
 		return _unknown
 	}
@@ -97,6 +100,22 @@ type Order struct {
 	StopLimitOrder
 	TrailingStopOrder
 	OCOOrder
+}
+
+func (order *Order) GetAmount() decimal.Decimal {
+	switch order.Type {
+	case Limit:
+		return order.LimitOrder.Amount
+	case Market:
+		return order.LimitOrder.Amount
+	case StopLimit:
+		return order.LimitOrder.Amount
+	case TrailingStop:
+		return order.LimitOrder.Amount
+	case OCO:
+		return order.LimitOrder.Amount
+	}
+	return decimal.Zero()
 }
 
 type LimitOrder struct {

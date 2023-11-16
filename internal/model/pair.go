@@ -6,6 +6,10 @@ func NewPair(base, quote string) Pair {
 	return [2]string{base, quote}
 }
 
+func (p Pair) String() string {
+	return p[0] + "/" + p[1]
+}
+
 func (p *Pair) SetBase(base string) {
 	p[0] = base
 }

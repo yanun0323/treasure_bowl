@@ -3,9 +3,10 @@ module main
 go 1.21
 
 require (
+	github.com/pkg/errors v0.9.1
 	github.com/robfig/cron v1.2.0
 	github.com/spf13/viper v1.13.0
-	github.com/yanun0323/decimal v0.0.1
+	github.com/yanun0323/decimal v0.1.2
 	github.com/yanun0323/gollection/v2 v2.2.0
 	github.com/yanun0323/pkg v1.2.0
 )
@@ -18,7 +19,6 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.5 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/spf13/afero v1.8.2 // indirect
 	github.com/spf13/cast v1.5.0 // indirect

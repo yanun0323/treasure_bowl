@@ -89,7 +89,7 @@ func (s *MaSimple) PushOrders(ctx context.Context, orders ...model.Order) {
 func (s *MaSimple) PushSupportedOrderTypes(ctx context.Context, types ...model.OrderType) {
 	s.supportOrderTypeMap.Clear()
 	for _, t := range types {
-		s.supportOrderTypeMap.Set(t, true)
+		s.supportOrderTypeMap.Store(t, true)
 	}
 }
 

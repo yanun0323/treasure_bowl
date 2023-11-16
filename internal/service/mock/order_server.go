@@ -67,10 +67,24 @@ func (s *orderServer) PostOrder(ctx context.Context, order model.Order) error {
 
 	switch order.Action {
 	case model.BUY:
-		
+		if err := s.account.MoveToInTrade(order.Pair.Quote(), order.GetAmount()); err != nil {
+			return errors.Wrapf(err, "buy %s", order.Pair.Quote())
+		}
 	case model.SELL:
-	case model.CANCEL:
-
+		if err := s.account.MoveToInTrade(order.Pair.Base(), order.GetAmount()); err != nil {
+			return errors.Wrapf(err, "sell %s", order.Pair.Base())
+		}
+	case model.BUY_CANCEL:
+		if err := s.account.MoveToAvailable(order.Pair.Quote(), order.GetAmount()); err != nil {
+			return errors.Wrapf(err, "buy %s", order.Pair.Quote())
+		}
+	case model.SELL_CANCEL:
+		if err := s.account.MoveToAvailable(order.Pair.Base(), order.GetAmount()); err != nil {
+			return errors.Wrapf(err, "sell %s", order.Pair.Base())
+		}
 	}
+
+	s.accPublisher <- s.account
+
 	return nil
 }
