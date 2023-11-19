@@ -182,8 +182,8 @@ github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcU
 github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
 github.com/subosito/gotenv v1.4.1 h1:jyEFiXpy21Wm81FBN71l9VoMMV8H8jG+qIK3GCpY6Qs=
 github.com/subosito/gotenv v1.4.1/go.mod h1:ayKnFf/c6rvx/2iiLrJUk1e6plDbT3edrFNGqEflhK0=
-github.com/yanun0323/decimal v0.1.2 h1:FOd+gHPaZyhvVhMTVnh4Mfhu00OC9QEvqEk8DXDa/Fk=
-github.com/yanun0323/decimal v0.1.2/go.mod h1:GhBKrjhbi8o+k518x60idaWFdw/imIlxn4hd02mzfy0=
+github.com/yanun0323/decimal v0.2.1 h1:Rl+iNWVY1r5j90/4xedH8VZopwQXsdsgu6/NkKe7yvU=
+github.com/yanun0323/decimal v0.2.1/go.mod h1:GhBKrjhbi8o+k518x60idaWFdw/imIlxn4hd02mzfy0=
 github.com/yanun0323/gollection/v2 v2.2.0 h1:6SxBFh08GI7cczpXT/8z6CPqfwhYkme3ZfGn/Y34eAQ=
 github.com/yanun0323/gollection/v2 v2.2.0/go.mod h1:mlys78gpYAolqehZDL8w4+6L8aBHfZeUUg4SMHEeB9M=
 github.com/yanun0323/pkg v1.2.0 h1:nRwN7TOm1DL5D2L8g2SzNPJgj8/E+WxonGORv71LRI4=

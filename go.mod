@@ -6,7 +6,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/robfig/cron v1.2.0
 	github.com/spf13/viper v1.13.0
-	github.com/yanun0323/decimal v0.1.2
+	github.com/yanun0323/decimal v0.2.1
 	github.com/yanun0323/gollection/v2 v2.2.0
 	github.com/yanun0323/pkg v1.2.0
 )
