@@ -2,12 +2,13 @@ package app
 
 import (
 	"context"
-	"main/internal/service"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/yanun0323/pkg/logs"
+
+	"main/internal/service"
 )
 
 func Run() {

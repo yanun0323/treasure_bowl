@@ -3,14 +3,15 @@ package mock
 import (
 	"context"
 	"fmt"
-	"main/internal/domain"
-	"main/internal/model"
-	"main/internal/util"
 	"sync/atomic"
 
 	"github.com/pkg/errors"
 	"github.com/yanun0323/gollection/v2"
 	"github.com/yanun0323/pkg/logs"
+
+	"main/internal/domain"
+	"main/internal/model"
+	"main/internal/util"
 )
 
 type orderServer struct {

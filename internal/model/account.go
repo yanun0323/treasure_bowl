@@ -2,10 +2,11 @@ package model
 
 import (
 	"fmt"
-	"main/internal/util"
 
 	"github.com/pkg/errors"
 	"github.com/yanun0323/decimal"
+
+	"main/internal/util"
 )
 
 type Balance struct {

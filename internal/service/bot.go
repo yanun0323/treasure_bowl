@@ -2,10 +2,11 @@ package service
 
 import (
 	"context"
-	"main/internal/domain"
-	"main/internal/model"
 
 	"github.com/yanun0323/pkg/logs"
+
+	"main/internal/domain"
+	"main/internal/model"
 )
 
 type bot struct {

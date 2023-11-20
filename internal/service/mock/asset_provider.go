@@ -2,11 +2,12 @@ package mock
 
 import (
 	"context"
+
+	"github.com/yanun0323/pkg/logs"
+
 	"main/internal/domain"
 	"main/internal/model"
 	"main/internal/util"
-
-	"github.com/yanun0323/pkg/logs"
 )
 
 var (

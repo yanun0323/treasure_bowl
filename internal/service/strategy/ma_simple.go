@@ -2,9 +2,6 @@ package strategy
 
 import (
 	"context"
-	"main/internal/domain"
-	"main/internal/model"
-	"main/internal/util"
 	"sync"
 	"time"
 
@@ -12,6 +9,10 @@ import (
 	"github.com/spf13/viper"
 	"github.com/yanun0323/gollection/v2"
 	"github.com/yanun0323/pkg/logs"
+
+	"main/internal/domain"
+	"main/internal/model"
+	"main/internal/util"
 )
 
 type MaSimple struct {
