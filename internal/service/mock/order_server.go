@@ -19,14 +19,14 @@ type orderServer struct {
 	accPublisher chan<- model.Account
 	msg          chan model.Order
 
-	connected        atomic.Bool
+	connected        *atomic.Bool
 	supportedTypeSet gollection.Set[model.OrderType]
 
 	account       model.Account
 	currentOrders util.SyncMap[string, model.Order]
 }
 
-func OrderServer(accChan chan<- model.Account, acc model.Account, supportedOrderTypes ...model.OrderType) domain.OrderServer {
+func NewOrderServer(accChan chan<- model.Account, acc model.Account, supportedOrderTypes ...model.OrderType) domain.OrderServer {
 	set := gollection.NewSet[model.OrderType]()
 	set.Insert(supportedOrderTypes...)
 	return &orderServer{
@@ -36,56 +36,57 @@ func OrderServer(accChan chan<- model.Account, acc model.Account, supportedOrder
 		supportedTypeSet: set,
 		account:          acc,
 		currentOrders:    util.NewSyncMap[string, model.Order](),
+		connected:        &atomic.Bool{},
 	}
 }
 
-func (s *orderServer) Connect(ctx context.Context) (<-chan model.Order, error) {
-	s.connected.Store(true)
-	return s.msg, nil
+func (p *orderServer) Connect(ctx context.Context) (<-chan model.Order, error) {
+	p.connected.Store(true)
+	return p.msg, nil
 }
 
-func (s *orderServer) DisConnect(ctx context.Context) error {
-	s.connected.Store(false)
+func (p *orderServer) DisConnect(ctx context.Context) error {
+	p.connected.Store(false)
 	return nil
 }
 
-func (s *orderServer) SupportOrderType(ctx context.Context) ([]model.OrderType, error) {
-	if !s.connected.Load() {
+func (p *orderServer) SupportOrderType(ctx context.Context) ([]model.OrderType, error) {
+	if !p.connected.Load() {
 		return nil, nil
 	}
 
-	return s.supportedTypeSet.ToSlice(), nil
+	return p.supportedTypeSet.ToSlice(), nil
 }
 
-func (s *orderServer) PostOrder(ctx context.Context, order model.Order) error {
-	if !s.connected.Load() {
+func (p *orderServer) PostOrder(ctx context.Context, order model.Order) error {
+	if !p.connected.Load() {
 		return errors.New("order server is disconnect")
 	}
 
-	if !s.supportedTypeSet.Contain(order.Type) {
+	if !p.supportedTypeSet.Contain(order.Type) {
 		return errors.New(fmt.Sprintf("unsupported type: %s", order.Type.String()))
 	}
 
 	switch order.Action {
 	case model.BUY:
-		if err := s.account.MoveToInTrade(order.Pair.Quote(), order.GetAmount()); err != nil {
+		if err := p.account.MoveToInTrade(order.Pair.Quote(), order.GetAmount()); err != nil {
 			return errors.Wrapf(err, "buy %s", order.Pair.Quote())
 		}
 	case model.SELL:
-		if err := s.account.MoveToInTrade(order.Pair.Base(), order.GetAmount()); err != nil {
+		if err := p.account.MoveToInTrade(order.Pair.Base(), order.GetAmount()); err != nil {
 			return errors.Wrapf(err, "sell %s", order.Pair.Base())
 		}
 	case model.BUY_CANCEL:
-		if err := s.account.MoveToAvailable(order.Pair.Quote(), order.GetAmount()); err != nil {
+		if err := p.account.MoveToAvailable(order.Pair.Quote(), order.GetAmount()); err != nil {
 			return errors.Wrapf(err, "buy %s", order.Pair.Quote())
 		}
 	case model.SELL_CANCEL:
-		if err := s.account.MoveToAvailable(order.Pair.Base(), order.GetAmount()); err != nil {
+		if err := p.account.MoveToAvailable(order.Pair.Base(), order.GetAmount()); err != nil {
 			return errors.Wrapf(err, "sell %s", order.Pair.Base())
 		}
 	}
 
-	s.accPublisher <- s.account
+	p.accPublisher <- p.account
 
 	return nil
 }

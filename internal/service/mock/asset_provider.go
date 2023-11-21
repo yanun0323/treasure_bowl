@@ -22,7 +22,7 @@ type assetProvider struct {
 	cancel        context.CancelFunc
 }
 
-func AssetProvider(orderConsumer <-chan model.Account, acc model.Account) domain.AssetProvideServer {
+func NewAssetProvider(orderConsumer <-chan model.Account, acc model.Account) domain.AssetProvideServer {
 	msg := make(chan model.Account, 10)
 	msg <- acc
 	return &assetProvider{
@@ -32,26 +32,26 @@ func AssetProvider(orderConsumer <-chan model.Account, acc model.Account) domain
 	}
 }
 
-func (s *assetProvider) Connect(ctx context.Context) (<-chan model.Account, error) {
+func (p *assetProvider) Connect(ctx context.Context) (<-chan model.Account, error) {
 	c, cancel := context.WithCancel(ctx)
-	s.cancel = cancel
+	p.cancel = cancel
 
 	go func(ctx context.Context) {
 		for {
 			select {
-			case acc := <-s.orderConsumer:
-				s.msg <- acc
+			case acc := <-p.orderConsumer:
+				p.msg <- acc
 			case <-ctx.Done():
 				return
 			}
 		}
 	}(c)
 
-	return s.msg, nil
+	return p.msg, nil
 }
 
-func (s *assetProvider) Disconnect(ctx context.Context) error {
-	defer close(s.msg)
-	s.cancel()
+func (p *assetProvider) Disconnect(ctx context.Context) error {
+	defer close(p.msg)
+	p.cancel()
 	return nil
 }
