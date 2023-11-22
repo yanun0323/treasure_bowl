@@ -10,7 +10,7 @@ import (
 type KlineProvider struct {
 }
 
-func NewKlineProvider() domain.KlineProvideServer {
+func NewKlineProvider(pair model.Pair) domain.KlineProvideServer {
 
 	return &KlineProvider{}
 }

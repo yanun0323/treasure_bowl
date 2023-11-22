@@ -6,7 +6,14 @@ func NewPair(base, quote string) Pair {
 	return [2]string{base, quote}
 }
 
-func (p Pair) String() string {
+// String return pair string connects with sep char.
+//
+// when sep is empty, pair string connect with '/' .
+func (p Pair) String(sep ...string) string {
+	if len(sep) != 0 && len(sep[0]) != 0 {
+		return p[0] + sep[0] + p[1]
+	}
+
 	return p[0] + "/" + p[1]
 }
 
