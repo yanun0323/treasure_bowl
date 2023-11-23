@@ -14,11 +14,12 @@ import (
 )
 
 type KlineProvider struct {
-	l       logs.Logger
-	tickers chan model.Kline
-	close   chan struct{}
-	cancel  context.CancelFunc
-	pair    model.Pair
+	l              logs.Logger
+	tickers        chan model.Kline
+	close          chan struct{}
+	cancel         context.CancelFunc
+	pair           model.Pair
+	supportedTypes []model.KlineType
 }
 
 func NewKlineProvider(pair model.Pair) domain.KlineProvideServer {
@@ -34,6 +35,8 @@ func (p *KlineProvider) Connect(ctx context.Context, types ...model.KlineType) (
 		return nil, errors.New("connect to ticker")
 	}
 	p.close = close
+
+	p.supportedTypes = types
 
 	c, cancel := context.WithCancel(ctx)
 	go p.consumeTicker(c, ticker)
