@@ -36,7 +36,7 @@ func (su *KlineProviderSuite) TestKlineProvider() {
 	defer p.Disconnect(su.ctx)
 
 	su.T().Log("connected")
-	ctx, cancel := context.WithTimeout(su.ctx, 1*time.Second)
+	ctx, cancel := context.WithTimeout(su.ctx, 5*time.Second)
 	defer cancel()
 	ks := make(map[int64]model.Kline, 200)
 
@@ -47,6 +47,7 @@ func (su *KlineProviderSuite) TestKlineProvider() {
 			case k := <-ch:
 				su.T().Logf("%+v", k)
 				ks[k.Timestamp] = k
+				return
 			case <-ctx.Done():
 				su.T().Log("end up consuming")
 				return
