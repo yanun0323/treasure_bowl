@@ -60,7 +60,7 @@ func (s *MaSimple) Disconnect(ctx context.Context) error {
 	return nil
 }
 
-func (s *MaSimple) PushKlines(ctx context.Context, klines ...model.Kline) {
+func (s *MaSimple) PushKline(ctx context.Context, klines ...model.Kline) {
 	for _, kline := range klines {
 		if s.klineTree[kline.Type] == nil {
 			s.klineTree[kline.Type] = gollection.NewSyncBTree[int64, model.Kline]()
@@ -69,7 +69,7 @@ func (s *MaSimple) PushKlines(ctx context.Context, klines ...model.Kline) {
 	}
 }
 
-func (s *MaSimple) PushAssets(ctx context.Context, accounts ...model.Account) {
+func (s *MaSimple) PushAsset(ctx context.Context, accounts ...model.Account) {
 	s.updating.Lock()
 	defer s.updating.Unlock()
 	for _, a := range accounts {
@@ -77,7 +77,7 @@ func (s *MaSimple) PushAssets(ctx context.Context, accounts ...model.Account) {
 	}
 }
 
-func (s *MaSimple) PushOrders(ctx context.Context, orders ...model.Order) {
+func (s *MaSimple) PushOrder(ctx context.Context, orders ...model.Order) {
 	s.updating.Lock()
 	defer s.updating.Unlock()
 	for _, order := range orders {
@@ -87,7 +87,7 @@ func (s *MaSimple) PushOrders(ctx context.Context, orders ...model.Order) {
 	}
 }
 
-func (s *MaSimple) PushSupportedOrderTypes(ctx context.Context, types ...model.OrderType) {
+func (s *MaSimple) PushSupportedOrderType(ctx context.Context, types ...model.OrderType) {
 	s.supportOrderTypeMap.Clear()
 	for _, t := range types {
 		s.supportOrderTypeMap.Store(t, true)

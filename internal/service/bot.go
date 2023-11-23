@@ -85,7 +85,7 @@ func (b *bot) setup(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	b.StrategyServer.PushSupportedOrderTypes(ctx, types...)
+	b.StrategyServer.PushSupportedOrderType(ctx, types...)
 
 	return nil
 }
@@ -94,7 +94,7 @@ func consumeKline(ctx context.Context, ch <-chan model.Kline, strategy domain.St
 	for {
 		select {
 		case kline := <-ch:
-			strategy.PushKlines(ctx, kline)
+			strategy.PushKline(ctx, kline)
 		case <-ctx.Done():
 			return
 		}
@@ -105,7 +105,7 @@ func consumeAsset(ctx context.Context, ch <-chan model.Account, strategy domain.
 	for {
 		select {
 		case account := <-ch:
-			strategy.PushAssets(ctx, account)
+			strategy.PushAsset(ctx, account)
 		case <-ctx.Done():
 			return
 		}
@@ -116,7 +116,7 @@ func consumeOrder(ctx context.Context, ch <-chan model.Order, strategy domain.St
 	for {
 		select {
 		case order := <-ch:
-			strategy.PushOrders(ctx, order)
+			strategy.PushOrder(ctx, order)
 		case <-ctx.Done():
 			return
 		}

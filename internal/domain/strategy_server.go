@@ -10,8 +10,8 @@ type StrategyServer interface {
 	Connect(ctx context.Context) (<-chan model.Order, error)
 	Disconnect(ctx context.Context) error
 
-	PushKlines(ctx context.Context, prices ...model.Kline)
-	PushAssets(ctx context.Context, accounts ...model.Account)
-	PushOrders(ctx context.Context, orders ...model.Order)
-	PushSupportedOrderTypes(ctx context.Context, types ...model.OrderType)
+	PushKline(ctx context.Context, prices ...model.Kline)
+	PushAsset(ctx context.Context, accounts ...model.Account)
+	PushOrder(ctx context.Context, orders ...model.Order)
+	PushSupportedOrderType(ctx context.Context, types ...model.OrderType)
 }
