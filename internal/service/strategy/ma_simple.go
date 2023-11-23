@@ -21,7 +21,7 @@ type MaSimple struct {
 	pair                model.Pair
 	signal              chan model.Order
 	asset               model.Account
-	klineTree           map[model.KlineType]gollection.SyncBTree[uint64, model.Kline]
+	klineTree           map[model.KlineType]gollection.SyncBTree[int64, model.Kline]
 	supportOrderTypeMap util.SyncMap[model.OrderType, bool]
 	orderMap            util.SyncMap[model.OrderType, []model.Order]
 
@@ -35,7 +35,7 @@ func NewMaSimple(pair model.Pair) (domain.StrategyServer, error) {
 		pair:                pair,
 		signal:              make(chan model.Order, 10),
 		asset:               model.NewAccount(),
-		klineTree:           map[model.KlineType]gollection.SyncBTree[uint64, model.Kline]{},
+		klineTree:           map[model.KlineType]gollection.SyncBTree[int64, model.Kline]{},
 		supportOrderTypeMap: util.NewSyncMap[model.OrderType, bool](),
 		orderMap:            util.NewSyncMap[model.OrderType, []model.Order](),
 	}, nil
@@ -63,7 +63,7 @@ func (s *MaSimple) Disconnect(ctx context.Context) error {
 func (s *MaSimple) PushKlines(ctx context.Context, klines ...model.Kline) {
 	for _, kline := range klines {
 		if s.klineTree[kline.Type] == nil {
-			s.klineTree[kline.Type] = gollection.NewSyncBTree[uint64, model.Kline]()
+			s.klineTree[kline.Type] = gollection.NewSyncBTree[int64, model.Kline]()
 		}
 		s.klineTree[kline.Type].Insert(kline.Timestamp, kline)
 	}
