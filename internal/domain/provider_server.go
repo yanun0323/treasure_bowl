@@ -7,7 +7,7 @@ import (
 )
 
 type KlineProvideServer interface {
-	Connect(ctx context.Context, types ...model.KlineType) (<-chan model.Kline, error)
+	Connect(ctx context.Context) (<-chan model.Kline, error)
 	Disconnect(ctx context.Context) error
 }
 

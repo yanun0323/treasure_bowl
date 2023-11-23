@@ -14,29 +14,28 @@ import (
 )
 
 type KlineProvider struct {
-	l              logs.Logger
-	tickers        chan model.Kline
-	close          chan struct{}
-	cancel         context.CancelFunc
-	pair           model.Pair
-	supportedTypes []model.KlineType
+	l               logs.Logger
+	tickers         chan model.Kline
+	close           chan struct{}
+	cancel          context.CancelFunc
+	pair            model.Pair
+	targetKlineType model.KlineType
 }
 
-func NewKlineProvider(pair model.Pair) domain.KlineProvideServer {
+func NewKlineProvider(pair model.Pair, target model.KlineType) domain.KlineProvideServer {
 	return &KlineProvider{
-		l:       logs.New("bitopro kline provider", util.LogLevel()),
-		tickers: make(chan model.Kline, 50),
+		l:               logs.New("bitopro kline provider", util.LogLevel()),
+		tickers:         make(chan model.Kline, 50),
+		targetKlineType: target,
 	}
 }
 
-func (p *KlineProvider) Connect(ctx context.Context, types ...model.KlineType) (<-chan model.Kline, error) {
+func (p *KlineProvider) Connect(ctx context.Context) (<-chan model.Kline, error) {
 	ticker, close := ws.NewPublicWs().RunTickerWsConsumer(ctx, []string{p.pair.String("_")})
 	if ticker == nil {
 		return nil, errors.New("connect to ticker")
 	}
 	p.close = close
-
-	p.supportedTypes = types
 
 	c, cancel := context.WithCancel(ctx)
 	go p.consumeTicker(c, ticker)
