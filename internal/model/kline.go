@@ -62,6 +62,7 @@ type Kline struct {
 	MinPrice   decimal.Decimal
 	OpenPrice  decimal.Decimal
 	ClosePrice decimal.Decimal
+	Volume     decimal.Decimal
 	Type       KlineType
-	Timestamp  int64
+	Timestamp  int64 /* end at (unix second) */
 }
