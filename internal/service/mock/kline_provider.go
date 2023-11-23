@@ -4,54 +4,48 @@ import (
 	"context"
 	"math/rand"
 	"strconv"
-	"sync/atomic"
 	"time"
-
-	"github.com/robfig/cron"
-	"github.com/yanun0323/decimal"
-	"github.com/yanun0323/pkg/logs"
 
 	"main/internal/domain"
 	"main/internal/model"
 	"main/internal/util"
+
+	"github.com/robfig/cron"
+	"github.com/yanun0323/decimal"
+	"github.com/yanun0323/pkg/logs"
 )
 
 type KlineProvider struct {
-	connected       *atomic.Bool
 	l               logs.Logger
 	ch              chan model.Kline
 	pair            model.Pair
-	cronJob         *cron.Cron
 	targetKlineType model.KlineType
+	cronJob         *cron.Cron
 
 	cacheKlineClose int
 }
 
-func NewKlineProvider(p model.Pair, target model.KlineType) domain.KlineProvideServer {
-	return &KlineProvider{
+func NewKlineProvider(pair model.Pair, target model.KlineType) domain.KlineProvideServer {
+	p := &KlineProvider{
 		l:               logs.New("mock kline provider", util.LogLevel()),
 		ch:              make(chan model.Kline, 10),
+		pair:            pair,
 		targetKlineType: target,
 		cacheKlineClose: 100,
-		pair:            p,
+		cronJob:         cron.New(),
 	}
+	p.cronJob.AddFunc(util.CronSpec(), func() {
+		p.publishKline()
+	})
+	return p
 }
 
 func (p *KlineProvider) Connect(ctx context.Context) (<-chan model.Kline, error) {
-	p.connected.Store(true)
-	if p.cronJob == nil {
-		p.cronJob = cron.New()
-		p.cronJob.AddFunc(p.targetKlineType.CronSpec(), func() {
-			p.publishKline()
-		})
-	}
-	p.cronJob.Stop()
 	p.cronJob.Run()
 	return p.ch, nil
 }
 
 func (p *KlineProvider) Disconnect(ctx context.Context) error {
-	p.connected.Store(false)
 	p.cronJob.Stop()
 	return nil
 }

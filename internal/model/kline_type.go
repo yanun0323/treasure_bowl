@@ -23,40 +23,39 @@ const (
 	K1M
 )
 
-// CronSpec: Deprecate
-func (t KlineType) CronSpec() string {
+func (t KlineType) String() string {
 	switch t {
 	case K1m:
-		return "0 * * * * *"
+		return "1m"
 	case K3m:
-		return "0 */3 * * * *"
+		return "3m"
 	case K5m:
-		return "0 */5 * * * *"
+		return "5m"
 	case K15m:
-		return "0 */15 * * * *"
+		return "15m"
 	case K30m:
-		return "0 */30 * * * *"
+		return "30m"
 	case K1h:
-		return "0 0 * * * *"
+		return "1h"
 	case K2h:
-		return "0 0 */2 * * *"
+		return "2h"
 	case K4h:
-		return "0 0 */4 * * *"
+		return "4h"
 	case K6h:
-		return "0 0 */6 * * *"
+		return "6h"
 	case K8h:
-		return "0 0 */8 * * *"
+		return "8h"
 	case K12h:
-		return "0 0 */12 * * *"
+		return "12h"
 	case K1d:
-		return "0 0 0 * * *"
+		return "1d"
 	case K1w:
-		return "0 0 0 0 0 *"
+		return "1w"
 	case K1M:
-		return "0 0 0 0 * *"
+		return "1M"
 
 	}
-	return "0 * * * * *"
+	return ""
 }
 
 func (t KlineType) duration() time.Duration {

@@ -18,5 +18,5 @@ func CronSpec() string {
 	if len(c) != 0 {
 		return c
 	}
-	return "*/5 * * * * *"
+	return "* * * * * *"
 }
