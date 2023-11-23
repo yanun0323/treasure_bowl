@@ -51,8 +51,10 @@ func (p *AssetProvider) Disconnect(ctx context.Context) error {
 		return nil
 	}
 	p.connected.Store(false)
-	p.cancel <- struct{}{}
-	defer close(p.cancel)
+	go func() {
+		defer close(p.cancel)
+		p.cancel <- struct{}{}
+	}()
 
 	p.cancelFunc()
 

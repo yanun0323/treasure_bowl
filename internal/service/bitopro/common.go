@@ -14,7 +14,7 @@ const (
 	_wsHost      = "wss://stream.bitopro.com:443/ws"
 )
 
-func ConnectPublicWs() (*ws.Ws, error) {
+func ConnectToPublicWs() (*ws.Ws, error) {
 	wss := ws.NewPublicWs()
 	if wss == nil {
 		return nil, errors.New("connect to public ws")
@@ -22,7 +22,7 @@ func ConnectPublicWs() (*ws.Ws, error) {
 	return wss, nil
 }
 
-func ConnectPrivateWs() (*ws.Ws, error) {
+func ConnectToPrivateWs() (*ws.Ws, error) {
 	wss := ws.NewPrivateWs(viper.GetString("api.bitopro.email"), viper.GetString("api.bitopro.key"), viper.GetString("api.bitopro.secret"))
 	if wss == nil {
 		return nil, errors.New("connect to private ws")

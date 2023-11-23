@@ -11,23 +11,27 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-func TestKlineProvider(t *testing.T) {
-	suite.Run(t, new(KlineProviderSuite))
+func TestAssetProvider(t *testing.T) {
+	suite.Run(t, new(AssetProviderSuite))
 }
 
-type KlineProviderSuite struct {
+type AssetProviderSuite struct {
 	suite.Suite
 	ctx context.Context
 }
 
-func (su *KlineProviderSuite) SetupSuite() {
+func (su *AssetProviderSuite) SetupSuite() {
 	su.ctx = context.Background()
 	su.Require().NoError(infra.Init("config"))
 }
 
-func (su *KlineProviderSuite) TestKlineProvider() {
-	su.T().Log("new kline provider")
-	p, err := NewKlineProvider(model.NewPair("BTC", "TWD"), model.K1m)
+func (su *AssetProviderSuite) Test() {
+	su.T().Log("connect to private ws")
+	ws, err := ConnectToPrivateWs()
+	su.Require().NoError(err)
+
+	su.T().Log("new asset provider")
+	p, err := NewAssetProvider(ws)
 	su.Require().NoError(err)
 
 	su.T().Log("connecting")
@@ -41,9 +45,13 @@ func (su *KlineProviderSuite) TestKlineProvider() {
 
 	su.T().Log("start consuming")
 	select {
-	case k := <-ch:
-		su.T().Logf("%+v", k)
-		su.NotEmpty(k)
+	case acc := <-ch:
+		su.T().Logf("%+v", acc)
+		acc.Balances.Iter(func(k string, b model.Balance) bool {
+			su.T().Logf("%s: %+v", k, b)
+			return true
+		})
+		su.NotEmpty(acc)
 	case <-ctx.Done():
 		su.T().Log("end up consuming")
 		su.Fail("consume kline timeout")
