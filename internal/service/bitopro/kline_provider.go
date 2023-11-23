@@ -1,3 +1,5 @@
+// documentation
+// ohlc: https://github.com/bitoex/bitopro-offical-api-docs/blob/master/api/v3/public/get_ohlc_data.md
 package bitopro
 
 import (
@@ -38,9 +40,6 @@ var (
 	}
 )
 
-// Using bitopro OHLC restful api
-//
-// ref: https://github.com/bitoex/bitopro-offical-api-docs/blob/master/api/v3/public/get_ohlc_data.md
 type KlineProvider struct {
 	l               logs.Logger
 	ch              chan model.Kline

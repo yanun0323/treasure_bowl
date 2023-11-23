@@ -3,10 +3,10 @@ package model
 import (
 	"fmt"
 
+	"main/internal/util"
+
 	"github.com/pkg/errors"
 	"github.com/yanun0323/decimal"
-
-	"main/internal/util"
 )
 
 type Balance struct {
@@ -16,7 +16,8 @@ type Balance struct {
 }
 
 type Account struct {
-	Balances util.SyncMap[string, Balance]
+	Balances  util.SyncMap[string, Balance]
+	Timestamp int64
 }
 
 func NewAccount() Account {
