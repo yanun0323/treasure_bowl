@@ -26,26 +26,20 @@ func (su *KlineProviderSuite) SetupSuite() {
 }
 
 func (su *KlineProviderSuite) TestKlineProvider() {
-	su.T().Log("new kline provider")
 	p, err := NewKlineProvider(model.NewPair("BTC", "TWD"), model.K1m)
 	su.Require().NoError(err)
 
-	su.T().Log("connecting")
 	ch, err := p.Connect(su.ctx)
 	su.Require().NoError(err)
 	defer p.Disconnect(su.ctx)
 
-	su.T().Log("connected")
 	ctx, cancel := context.WithTimeout(su.ctx, 3*time.Second)
 	defer cancel()
 
-	su.T().Log("start consuming")
 	select {
 	case k := <-ch:
-		su.T().Logf("%+v", k)
-		su.NotEmpty(k)
+		su.NotEmpty(k, "%+v", k)
 	case <-ctx.Done():
-		su.T().Log("end up consuming")
 		su.Fail("consume kline timeout")
 	}
 }

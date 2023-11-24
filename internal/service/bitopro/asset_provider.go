@@ -65,14 +65,15 @@ func (p *AssetProvider) consumeAccountBalance(ctx context.Context, ch <-chan ws.
 	for {
 		select {
 		case acc := <-ch:
-			p.accountChannel <- p.transAccData(&acc)
+			p.l.Debugf("consume account balance: %+v", acc.Data)
+			p.accountChannel <- transAccData(&acc)
 		case <-ctx.Done():
 			return
 		}
 	}
 }
 
-func (p *AssetProvider) transAccData(d *ws.AccountBalanceData) model.Account {
+func transAccData(d *ws.AccountBalanceData) model.Account {
 	a := model.NewAccount()
 	a.Timestamp = d.Timestamp
 	for _, data := range d.Data {

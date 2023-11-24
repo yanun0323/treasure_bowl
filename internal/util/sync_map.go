@@ -47,6 +47,22 @@ func (m *SyncMap[K, V]) Iter(fn func(key K, value V) bool) {
 	}
 }
 
+func (m *SyncMap[K, V]) Len() int {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
+	return len(m.data)
+}
+
+func (m *SyncMap[K, V]) Clone() map[K]V {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
+	c := make(map[K]V, len(m.data))
+	for k, v := range m.data {
+		c[k] = v
+	}
+	return c
+}
+
 func (m *SyncMap[K, V]) Clear() {
 	m.lock.Lock()
 	defer m.lock.Unlock()

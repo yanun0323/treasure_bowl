@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/bitoex/bitopro-api-go/pkg/bitopro"
 	"github.com/bitoex/bitopro-api-go/pkg/ws"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
@@ -13,6 +14,22 @@ const (
 	_restfulHost = "https://api.bitopro.com/v3"
 	_wsHost      = "wss://stream.bitopro.com:443/ws"
 )
+
+func ConnectToPublicClient() (*bitopro.PubAPI, error) {
+	client := bitopro.GetPubClient()
+	if client == nil {
+		return nil, errors.New("connect to public client")
+	}
+	return client, nil
+}
+
+func ConnectToPrivateClient() (*bitopro.AuthAPI, error) {
+	client := bitopro.GetAuthClient(viper.GetString("api.bitopro.email"), viper.GetString("api.bitopro.key"), viper.GetString("api.bitopro.secret"))
+	if client == nil {
+		return nil, errors.New("connect to private client")
+	}
+	return client, nil
+}
 
 func ConnectToPublicWs() (*ws.Ws, error) {
 	wss := ws.NewPublicWs()

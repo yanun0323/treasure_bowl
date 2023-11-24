@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"main/internal/model"
 	"main/pkg/infra"
 
 	"github.com/stretchr/testify/suite"
@@ -25,35 +24,31 @@ func (su *AssetProviderSuite) SetupSuite() {
 	su.Require().NoError(infra.Init("config"))
 }
 
-func (su *AssetProviderSuite) Test() {
-	su.T().Log("connect to private ws")
+func (su *AssetProviderSuite) TestAssetProvider() {
 	ws, err := ConnectToPrivateWs()
 	su.Require().NoError(err)
 
-	su.T().Log("new asset provider")
 	p, err := NewAssetProvider(ws)
 	su.Require().NoError(err)
 
-	su.T().Log("connecting")
 	ch, err := p.Connect(su.ctx)
 	su.Require().NoError(err)
 	defer p.Disconnect(su.ctx)
 
-	su.T().Log("connected")
 	ctx, cancel := context.WithTimeout(su.ctx, 3*time.Second)
 	defer cancel()
 
-	su.T().Log("start consuming")
 	select {
 	case acc := <-ch:
-		su.T().Logf("%+v", acc)
-		acc.Balances.Iter(func(k string, b model.Balance) bool {
-			su.T().Logf("%s: %+v", k, b)
-			return true
-		})
-		su.NotEmpty(acc)
+		su.NotEmpty(acc.Balances.Len(), "%+v", acc.Balances.Clone())
 	case <-ctx.Done():
-		su.T().Log("end up consuming")
 		su.Fail("consume kline timeout")
 	}
+}
+
+func (su *AssetProviderSuite) TestRestfulApi() {
+	c, err := ConnectToPrivateClient()
+	su.Require().NoError(err)
+	acc := c.GetAccountBalance()
+	su.NotEmpty(acc.Data, "%+v", acc.Data)
 }
