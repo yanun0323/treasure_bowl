@@ -40,7 +40,7 @@ func (su *AssetProviderSuite) TestAssetProvider() {
 
 	select {
 	case acc := <-ch:
-		su.NotEmpty(acc.Balances.Len(), "%+v", acc.Balances.Clone())
+		su.NotZero(acc.Balances.Len(), "%+v", acc.Balances.Clone())
 	case <-ctx.Done():
 		su.Fail("consume kline timeout")
 	}
