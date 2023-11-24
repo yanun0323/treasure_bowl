@@ -5,14 +5,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/robfig/cron"
-	"github.com/spf13/viper"
-	"github.com/yanun0323/gollection/v2"
-	"github.com/yanun0323/pkg/logs"
-
 	"main/internal/domain"
 	"main/internal/model"
 	"main/internal/util"
+
+	"github.com/robfig/cron"
+	"github.com/yanun0323/gollection/v2"
+	"github.com/yanun0323/pkg/logs"
 )
 
 type MaSimple struct {
@@ -30,7 +29,7 @@ type MaSimple struct {
 
 func NewMaSimple(pair model.Pair) (domain.StrategyServer, error) {
 	return &MaSimple{
-		l:                   logs.New("strategy ma simple", viper.GetUint16("log.levels")),
+		l:                   logs.New("strategy ma simple", util.LogLevel()),
 		updating:            &sync.RWMutex{},
 		pair:                pair,
 		signal:              make(chan model.Order, 10),

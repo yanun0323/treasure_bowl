@@ -2,6 +2,7 @@ package bitopro
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/bitoex/bitopro-api-go/pkg/bitopro"
@@ -24,7 +25,15 @@ func ConnectToPublicClient() (*bitopro.PubAPI, error) {
 }
 
 func ConnectToPrivateClient() (*bitopro.AuthAPI, error) {
-	client := bitopro.GetAuthClient(viper.GetString("api.bitopro.email"), viper.GetString("api.bitopro.key"), viper.GetString("api.bitopro.secret"))
+	identity := viper.GetString("api.bitopro.email")
+	key := viper.GetString("api.bitopro.key")
+	secret := viper.GetString("api.bitopro.secret")
+
+	if len(identity) == 0 || len(key) == 0 || len(secret) == 0 {
+		return nil, errors.New(fmt.Sprintf("empty environment key. email: %s, key: %s, secret: %s", identity, key, secret))
+	}
+
+	client := bitopro.GetAuthClient(identity, key, secret)
 	if client == nil {
 		return nil, errors.New("connect to private client")
 	}

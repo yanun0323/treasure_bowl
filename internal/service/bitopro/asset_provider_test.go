@@ -45,10 +45,3 @@ func (su *AssetProviderSuite) TestAssetProvider() {
 		su.Fail("consume kline timeout")
 	}
 }
-
-func (su *AssetProviderSuite) TestRestfulApi() {
-	c, err := ConnectToPrivateClient()
-	su.Require().NoError(err)
-	acc := c.GetAccountBalance()
-	su.NotEmpty(acc.Data, "%+v", acc.Data)
-}

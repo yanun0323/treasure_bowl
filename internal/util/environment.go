@@ -5,12 +5,8 @@ import (
 	"github.com/yanun0323/pkg/logs"
 )
 
-func LogLevel() uint16 {
-	level, err := logs.NewLevel(viper.GetString("log.level"))
-	if err != nil {
-		return 0
-	}
-	return uint16(level)
+func LogLevel() logs.Level {
+	return logs.NewLevel(viper.GetString("log.level"))
 }
 
 func CronSpec() string {

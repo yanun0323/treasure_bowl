@@ -6,14 +6,15 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/yanun0323/pkg/logs"
-
 	"main/internal/service"
+	"main/internal/util"
+
+	"github.com/yanun0323/pkg/logs"
 )
 
 func Run() {
 	ctx := context.Background()
-	l := logs.New("bot", 0)
+	l := logs.New("bot", util.LogLevel())
 
 	bot, err := service.NewBot("General", "SOL/USDT")
 	if err != nil {

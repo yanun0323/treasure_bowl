@@ -224,8 +224,8 @@ github.com/yanun0323/decimal v0.2.3 h1:qxjFweHVO2PcIJY1C2Pb8jZDKkxzbbdAeV/KTe6Vf
 github.com/yanun0323/decimal v0.2.3/go.mod h1:GhBKrjhbi8o+k518x60idaWFdw/imIlxn4hd02mzfy0=
 github.com/yanun0323/gollection/v2 v2.2.0 h1:6SxBFh08GI7cczpXT/8z6CPqfwhYkme3ZfGn/Y34eAQ=
 github.com/yanun0323/gollection/v2 v2.2.0/go.mod h1:mlys78gpYAolqehZDL8w4+6L8aBHfZeUUg4SMHEeB9M=
-github.com/yanun0323/pkg v1.2.0 h1:nRwN7TOm1DL5D2L8g2SzNPJgj8/E+WxonGORv71LRI4=
-github.com/yanun0323/pkg v1.2.0/go.mod h1:t6Z97aBcX5cAk5HyYXU3Fplvi25g0bm6y2F3hG/s0GQ=
+github.com/yanun0323/pkg v1.3.1 h1:Q5AWvG79+cRN4pkiWEvUP2rRAhY7NsSy+/uOjEtPjEQ=
+github.com/yanun0323/pkg v1.3.1/go.mod h1:lGMxsitfyKsaOAWtd4ptvsyG+qYGJwIUAowv5HQKcAk=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
