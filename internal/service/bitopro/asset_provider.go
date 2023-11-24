@@ -20,7 +20,7 @@ type AssetProvider struct {
 	l              logs.Logger
 	connected      *atomic.Bool
 	cancel         chan struct{}
-	cancelFunc     context.CancelFunc
+	cancelFn       context.CancelFunc
 	accountChannel chan model.Account
 	wss            *ws.Ws
 }
@@ -39,8 +39,8 @@ func (p *AssetProvider) Connect(ctx context.Context) (<-chan model.Account, erro
 	ch, cancel := p.wss.RunAccountBalancesWsConsumer(ctx)
 	p.cancel = cancel
 
-	c, cancelFunc := context.WithCancel(ctx)
-	p.cancelFunc = cancelFunc
+	c, cancelFn := context.WithCancel(ctx)
+	p.cancelFn = cancelFn
 	go p.consumeAccountBalance(c, ch)
 	return p.accountChannel, nil
 }
@@ -56,7 +56,7 @@ func (p *AssetProvider) Disconnect(ctx context.Context) error {
 		p.cancel <- struct{}{}
 	}()
 
-	p.cancelFunc()
+	p.cancelFn()
 
 	return nil
 }
