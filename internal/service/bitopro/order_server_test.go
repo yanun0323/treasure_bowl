@@ -30,7 +30,7 @@ func (su *OrderServerSuite) SetupSuite() {
 	su.l = logs.New("order server test suite", logs.LevelDebug)
 }
 
-func (su *OrderServerSuite) TestOrder() {
+func (su *OrderServerSuite) TestCreateAndCancelOrder() {
 	wss, err := ConnectToPrivateWs()
 	su.Require().NoError(err)
 
@@ -48,9 +48,9 @@ func (su *OrderServerSuite) TestOrder() {
 		Pair:   su.pair,
 		Type:   model.OrderTypeLimit,
 		Action: model.OrderActionBuy,
-		Price:  "10",
+		Price:  "0.001",
 		Amount: model.Amount{
-			Total: "100",
+			Total: "10",
 		},
 	}))
 
@@ -64,5 +64,51 @@ func (su *OrderServerSuite) TestOrder() {
 		su.NoError(server.PushOrder(su.ctx, o))
 	case <-ctx.Done():
 		su.Fail("consume order timeout")
+	}
+}
+
+func (su *OrderServerSuite) TestCancelOrderInTheBeginning() {
+	wss, err := ConnectToPrivateWs()
+	su.Require().NoError(err)
+
+	client, err := ConnectToPrivateClient()
+	su.Require().NoError(err)
+
+	server, err := NewOrderServer(su.pair, wss, client)
+	su.Require().NoError(err)
+
+	{
+		_, err := server.Connect(su.ctx)
+		su.Require().NoError(err)
+
+		su.Require().NoError(server.PushOrder(su.ctx, model.Order{
+			Pair:   su.pair,
+			Type:   model.OrderTypeLimit,
+			Action: model.OrderActionBuy,
+			Price:  "0.001",
+			Amount: model.Amount{
+				Total: "10",
+			},
+		}))
+
+		su.Require().NoError(server.DisConnect(su.ctx))
+	}
+
+	{
+		ch, err := server.Connect(su.ctx)
+		su.Require().NoError(err)
+		defer server.DisConnect(su.ctx)
+
+		ctx, cancel := context.WithTimeout(su.ctx, 15*time.Second)
+		defer cancel()
+
+		select {
+		case o := <-ch:
+			o.Action = model.OrderActionCancelBuy
+			su.l.Infof("consume order: %+v", o)
+			su.NoError(server.PushOrder(su.ctx, o))
+		case <-ctx.Done():
+			su.Fail("consume order timeout")
+		}
 	}
 }

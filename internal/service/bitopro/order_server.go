@@ -40,6 +40,7 @@ func NewOrderServer(pair model.Pair, wss *ws.Ws, client *bitopro.AuthAPI) (domai
 	return &OrderServer{
 		l:            logs.New("bitopro order server", util.LogLevel()),
 		pair:         pair,
+		connected:    &atomic.Bool{},
 		wss:          wss,
 		clientID:     1,
 		client:       client,
@@ -104,9 +105,9 @@ func (p *OrderServer) createOrderBuy(ctx context.Context, o model.Order) error {
 
 	switch o.Type {
 	case model.OrderTypeLimit:
-		c = p.client.CreateOrderLimitBuy(p.clientID, p.pair.Lowercase(), o.Price.String(), o.Amount.Total.String())
+		c = p.client.CreateOrderLimitBuy(p.clientID, p.pair.Lowercase("_"), o.Price.String(), o.Amount.Total.String())
 	case model.OrderTypeMarket:
-		c = p.client.CreateOrderMarketBuy(p.clientID, p.pair.Lowercase(), o.Amount.Total.String())
+		c = p.client.CreateOrderMarketBuy(p.clientID, p.pair.Lowercase("_"), o.Amount.Total.String())
 	case model.OrderTypeStopLimit:
 		// TODO: official package didn't support 'stop limit' this type, need rewrite
 		return errors.New("stop limit doesn't support yet")
@@ -134,9 +135,9 @@ func (p *OrderServer) createOrderSell(ctx context.Context, o model.Order) error 
 
 	switch o.Type {
 	case model.OrderTypeLimit:
-		c = p.client.CreateOrderLimitSell(p.clientID, p.pair.Lowercase(), o.Price.String(), o.Amount.Total.String())
+		c = p.client.CreateOrderLimitSell(p.clientID, p.pair.Lowercase("_"), o.Price.String(), o.Amount.Total.String())
 	case model.OrderTypeMarket:
-		c = p.client.CreateOrderMarketSell(p.clientID, p.pair.Lowercase(), o.Amount.Total.String())
+		c = p.client.CreateOrderMarketSell(p.clientID, p.pair.Lowercase("_"), o.Amount.Total.String())
 	case model.OrderTypeStopLimit:
 		// TODO: official package didn't support 'stop limit' this type, need rewrite
 		return errors.New("stop limit doesn't support yet")
