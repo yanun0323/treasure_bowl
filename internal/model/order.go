@@ -1,16 +1,19 @@
 package model
 
-import "github.com/yanun0323/decimal"
+import (
+	"github.com/yanun0323/decimal"
+)
 
 const (
 	_unknown = "Unknown"
 )
 
-// OrderAction
+// OrderAction requirement for pushing order to order server
 type OrderAction uint8
 
 const (
-	BUY OrderAction = iota
+	None OrderAction = iota /* 'None' set when this order comes from the order server */
+	BUY
 	SELL
 	BUY_CANCEL
 	SELL_CANCEL
@@ -18,6 +21,8 @@ const (
 
 func (a OrderAction) String() string {
 	switch a {
+	case None:
+		return "NONE"
 	case BUY:
 		return "BUY"
 	case SELL:
@@ -65,9 +70,9 @@ type OrderStatus uint8
 const (
 	Pending OrderStatus = iota
 	Created
-	Canceled
-	PartialComplete
 	Complete
+	PartialComplete
+	Canceled
 )
 
 func (s OrderStatus) String() string {
@@ -89,61 +94,41 @@ func (s OrderStatus) String() string {
 
 // Order
 type Order struct {
-	ID     string
-	Pair   Pair
-	Action OrderAction
-	Type   OrderType
-	Status OrderStatus
+	ID        string
+	Pair      Pair
+	Action    OrderAction
+	Type      OrderType
+	Status    OrderStatus
+	Timestamp int64 /* unix second */
+	Price     decimal.Decimal
+	Amount    Amount
 
-	LimitOrder
-	MarketOrder
 	StopLimitOrder
 	TrailingStopOrder
 	OCOOrder
 }
 
-func (order *Order) GetAmount() decimal.Decimal {
-	switch order.Type {
-	case Limit:
-		return order.LimitOrder.Amount
-	case Market:
-		return order.LimitOrder.Amount
-	case StopLimit:
-		return order.LimitOrder.Amount
-	case TrailingStop:
-		return order.LimitOrder.Amount
-	case OCO:
-		return order.LimitOrder.Amount
-	}
-	return decimal.Zero()
+func (order *Order) GetTotal() decimal.Decimal {
+	return order.Amount.Total
 }
 
-type LimitOrder struct {
-	Price  decimal.Decimal
-	Amount decimal.Decimal
-}
-
-type MarketOrder struct {
-	Amount decimal.Decimal
+type Amount struct {
 	Total  decimal.Decimal
+	Deal   decimal.Decimal
+	Remain decimal.Decimal
 }
 
 type StopLimitOrder struct {
-	Stop   decimal.Decimal
-	Limit  decimal.Decimal
-	Amount decimal.Decimal
+	Stop decimal.Decimal
 }
 
 type TrailingStopOrder struct {
 	TrailingDelta   decimal.Decimal
 	Limit           decimal.Decimal
-	Amount          decimal.Decimal
 	ActivationPrice decimal.Decimal
 }
 
 type OCOOrder struct {
-	Price  decimal.Decimal
-	Stop   decimal.Decimal
-	Limit  decimal.Decimal
-	Amount decimal.Decimal
+	Stop  decimal.Decimal
+	Limit decimal.Decimal
 }
