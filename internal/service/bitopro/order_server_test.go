@@ -3,10 +3,13 @@ package bitopro
 import (
 	"context"
 	"testing"
+	"time"
 
+	"main/internal/model"
 	"main/pkg/infra"
 
 	"github.com/stretchr/testify/suite"
+	"github.com/yanun0323/pkg/logs"
 )
 
 func TestOrderServer(t *testing.T) {
@@ -15,41 +18,51 @@ func TestOrderServer(t *testing.T) {
 
 type OrderServerSuite struct {
 	suite.Suite
-	ctx context.Context
+	ctx  context.Context
+	l    logs.Logger
+	pair model.Pair
 }
 
 func (su *OrderServerSuite) SetupSuite() {
 	su.ctx = context.Background()
 	su.Require().NoError(infra.Init("config-test"))
+	su.pair = model.NewPair("usdt", "twd")
+	su.l = logs.New("order server test suite", logs.LevelDebug)
 }
 
-func (su *OrderServerSuite) SetupTest() {
+func (su *OrderServerSuite) TestOrder() {
+	wss, err := ConnectToPrivateWs()
+	su.Require().NoError(err)
 
-}
+	client, err := ConnectToPrivateClient()
+	su.Require().NoError(err)
 
-func (su *OrderServerSuite) TearDownTest() {
+	server, err := NewOrderServer(su.pair, wss, client)
+	su.Require().NoError(err)
 
-}
+	ch, err := server.Connect(su.ctx)
+	su.Require().NoError(err)
+	defer server.DisConnect(su.ctx)
 
-func (su *OrderServerSuite) TearDownSuite() {
+	su.Require().NoError(server.PushOrder(su.ctx, model.Order{
+		Pair:   su.pair,
+		Type:   model.OrderTypeLimit,
+		Action: model.OrderActionBuy,
+		Price:  "10",
+		Amount: model.Amount{
+			Total: "100",
+		},
+	}))
 
-}
+	ctx, cancel := context.WithTimeout(su.ctx, 15*time.Second)
+	defer cancel()
 
-func (su *OrderServerSuite) Test() {
-
-}
-
-func (su *OrderServerSuite) TestWithCase() {
-	testCases := []struct {
-		desc string
-	}{
-		{},
-	}
-
-	for _, tc := range testCases {
-		su.T().Run(tc.desc, func(t *testing.T) {
-			t.Log(tc.desc)
-
-		})
+	select {
+	case o := <-ch:
+		o.Action = model.OrderActionCancelBuy
+		su.l.Infof("consume order: %+v", o)
+		su.NoError(server.PushOrder(su.ctx, o))
+	case <-ctx.Done():
+		su.Fail("consume order timeout")
 	}
 }
