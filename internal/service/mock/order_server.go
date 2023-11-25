@@ -69,19 +69,19 @@ func (p *orderServer) PostOrder(ctx context.Context, order model.Order) error {
 
 	switch order.Action {
 	case model.BUY:
-		if err := p.account.MoveToInTrade(order.Pair.Quote(), order.GetAmount()); err != nil {
+		if err := p.account.MoveToInTrade(order.Pair.Quote(), order.GetTotal()); err != nil {
 			return errors.Wrapf(err, "buy %s", order.Pair.Quote())
 		}
 	case model.SELL:
-		if err := p.account.MoveToInTrade(order.Pair.Base(), order.GetAmount()); err != nil {
+		if err := p.account.MoveToInTrade(order.Pair.Base(), order.GetTotal()); err != nil {
 			return errors.Wrapf(err, "sell %s", order.Pair.Base())
 		}
 	case model.BUY_CANCEL:
-		if err := p.account.MoveToAvailable(order.Pair.Quote(), order.GetAmount()); err != nil {
+		if err := p.account.MoveToAvailable(order.Pair.Quote(), order.GetTotal()); err != nil {
 			return errors.Wrapf(err, "buy %s", order.Pair.Quote())
 		}
 	case model.SELL_CANCEL:
-		if err := p.account.MoveToAvailable(order.Pair.Base(), order.GetAmount()); err != nil {
+		if err := p.account.MoveToAvailable(order.Pair.Base(), order.GetTotal()); err != nil {
 			return errors.Wrapf(err, "sell %s", order.Pair.Base())
 		}
 	}

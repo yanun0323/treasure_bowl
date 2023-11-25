@@ -69,8 +69,11 @@ func (p *OrderServer) DisConnect(ctx context.Context) error {
 }
 
 func (p *OrderServer) SupportOrderType(ctx context.Context) ([]model.OrderType, error) {
-	// TODO: Implement me
-	return nil, nil
+	return []model.OrderType{
+		model.Limit,
+		model.StopLimit,
+		model.Market,
+	}, nil
 }
 
 func (p *OrderServer) PostOrder(ctx context.Context, order model.Order) error {
@@ -79,12 +82,11 @@ func (p *OrderServer) PostOrder(ctx context.Context, order model.Order) error {
 }
 
 func (p *OrderServer) consumeOrder(ctx context.Context, ch <-chan ws.OrdersData) {
-	// TODO: Implement me
 	for {
 		select {
 		case order := <-ch:
 			p.l.Debugf("consume account balance: %+v", order.Data)
-			for _, o := range transOrderData(p.pair, &order) {
+			for _, o := range convOrderData(p.pair, &order) {
 				p.orderChannel <- o
 			}
 		case <-ctx.Done():
@@ -93,7 +95,7 @@ func (p *OrderServer) consumeOrder(ctx context.Context, ch <-chan ws.OrdersData)
 	}
 }
 
-func transOrderData(pair model.Pair, d *ws.OrdersData) []model.Order {
+func convOrderData(pair model.Pair, d *ws.OrdersData) []model.Order {
 	ods := d.Data[strings.ToLower(pair.String("_"))]
 	if len(ods) == 0 {
 		return nil
@@ -101,8 +103,51 @@ func transOrderData(pair model.Pair, d *ws.OrdersData) []model.Order {
 
 	result := make([]model.Order, 0, len(ods))
 	for _, o := range ods {
-		_ = o
-		// TODO: Implement me
+		// LIMIT, Market or STOP_LIMIT
+		oo := model.Order{
+			ID:        o.ID,
+			Pair:      pair,
+			Action:    model.None,
+			Status:    convStatus(o.Status),
+			Timestamp: o.Timestamp / 1000,
+		}
+		switch strings.ToUpper(o.Type) {
+		case "LIMIT":
+			oo.Type = model.Limit
+		case "MARKET":
+			oo.Type = model.Market
+		case "STOP_LIMIT":
+			oo.Type = model.StopLimit
+		default:
+			continue
+		}
+
 	}
 	return result
+}
+
+/*
+convStatus convert api status into model status
+
+	// -1: Not Triggered
+	// 0: In progress
+	// 1: In progress (Partial deal)
+	// 2: Completed
+	// 3: Completed (Partial deal)
+	// 4: Cancelled
+	// 6: Post-only Cancelled
+*/
+func convStatus(s int) model.OrderStatus {
+	switch s {
+	case 0, 1:
+		return model.Created
+	case 2:
+		return model.Complete
+	case 3:
+		return model.PartialComplete
+	case 4:
+		return model.Canceled
+	default:
+		return model.Pending
+	}
 }
