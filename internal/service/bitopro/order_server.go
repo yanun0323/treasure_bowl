@@ -16,6 +16,7 @@ import (
 
 	"github.com/bitoex/bitopro-api-go/pkg/bitopro"
 	"github.com/bitoex/bitopro-api-go/pkg/ws"
+	"github.com/yanun0323/decimal"
 	"github.com/yanun0323/pkg/logs"
 )
 
@@ -70,9 +71,9 @@ func (p *OrderServer) DisConnect(ctx context.Context) error {
 
 func (p *OrderServer) SupportOrderType(ctx context.Context) ([]model.OrderType, error) {
 	return []model.OrderType{
-		model.Limit,
-		model.StopLimit,
-		model.Market,
+		model.OrderTypeLimit,
+		model.OrderTypeStopLimit,
+		model.OrderTypeMarket,
 	}, nil
 }
 
@@ -103,31 +104,47 @@ func convOrderData(pair model.Pair, d *ws.OrdersData) []model.Order {
 
 	result := make([]model.Order, 0, len(ods))
 	for _, o := range ods {
-		// LIMIT, Market or STOP_LIMIT
-		oo := model.Order{
-			ID:        o.ID,
-			Pair:      pair,
-			Action:    model.None,
-			Status:    convStatus(o.Status),
-			Timestamp: o.Timestamp / 1000,
-		}
-		switch strings.ToUpper(o.Type) {
-		case "LIMIT":
-			oo.Type = model.Limit
-		case "MARKET":
-			oo.Type = model.Market
-		case "STOP_LIMIT":
-			oo.Type = model.StopLimit
-		default:
+		ot := convOrderType(o.Type)
+		if ot.IsUnknown() {
 			continue
 		}
+		result = append(result, model.Order{
+			ID:        o.ID,
+			Pair:      pair,
+			Action:    model.OrderActionNone,
+			Type:      ot,
+			Status:    convStatus(o.Status),
+			Timestamp: o.Timestamp / 1000,
+			Price:     decimal.Require(o.Price),
+			Amount: model.Amount{
+				Total:  decimal.Require(o.OriginalAmount),
+				Deal:   decimal.Require(o.ExecutedAmount),
+				Remain: decimal.Require(o.RemainingAmount),
+			},
+		})
 
 	}
 	return result
 }
 
+// convOrderType converts api order type into model order type.
+//
+// LIMIT, Market or STOP_LIMIT
+func convOrderType(s string) model.OrderType {
+	switch strings.ToUpper(s) {
+	case "LIMIT":
+		return model.OrderTypeLimit
+	case "MARKET":
+		return model.OrderTypeMarket
+	case "STOP_LIMIT":
+		return model.OrderTypeStopLimit
+	default:
+		return model.OrderTypeUnknown
+	}
+}
+
 /*
-convStatus convert api status into model status
+convStatus converts api order status into model order status.
 
 	// -1: Not Triggered
 	// 0: In progress
@@ -140,14 +157,14 @@ convStatus convert api status into model status
 func convStatus(s int) model.OrderStatus {
 	switch s {
 	case 0, 1:
-		return model.Created
+		return model.OrderStatusCreated
 	case 2:
-		return model.Complete
+		return model.OrderStatusComplete
 	case 3:
-		return model.PartialComplete
+		return model.OrderStatusPartialComplete
 	case 4:
-		return model.Canceled
+		return model.OrderStatusCanceled
 	default:
-		return model.Pending
+		return model.OrderStatusPending
 	}
 }

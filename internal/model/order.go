@@ -5,32 +5,36 @@ import (
 )
 
 const (
-	_unknown = "Unknown"
+	_unknown = "UNKNOWN"
 )
 
 // OrderAction requirement for pushing order to order server
 type OrderAction uint8
 
 const (
-	None OrderAction = iota /* 'None' set when this order comes from the order server */
-	BUY
-	SELL
-	BUY_CANCEL
-	SELL_CANCEL
+	OrderActionNone OrderAction = iota /* 'None' set when this order comes from the order server */
+	OrderActionBuy
+	OrderActionSell
+	OrderActionCancelBuy
+	OrderActionCancelSell
 )
+
+func (a OrderAction) IsNone() bool {
+	return a == OrderActionNone
+}
 
 func (a OrderAction) String() string {
 	switch a {
-	case None:
+	case OrderActionNone:
 		return "NONE"
-	case BUY:
+	case OrderActionBuy:
 		return "BUY"
-	case SELL:
+	case OrderActionSell:
 		return "SELL"
-	case BUY_CANCEL:
-		return "BUY_CANCEL"
-	case SELL_CANCEL:
-		return "SELL_CANCEL"
+	case OrderActionCancelBuy:
+		return "CANCEL_BUY"
+	case OrderActionCancelSell:
+		return "CANCEL_SELL"
 	default:
 		return _unknown
 	}
@@ -40,24 +44,29 @@ func (a OrderAction) String() string {
 type OrderType uint8
 
 const (
-	Limit OrderType = iota
-	Market
-	StopLimit
-	TrailingStop
-	OCO
+	OrderTypeUnknown OrderType = iota
+	OrderTypeLimit
+	OrderTypeMarket
+	OrderTypeStopLimit
+	OrderTypeTrailingStop
+	OrderTypeOCO
 )
+
+func (t OrderType) IsUnknown() bool {
+	return t == OrderTypeUnknown
+}
 
 func (t OrderType) String() string {
 	switch t {
-	case Limit:
+	case OrderTypeLimit:
 		return "Limit"
-	case Market:
+	case OrderTypeMarket:
 		return "Market"
-	case StopLimit:
+	case OrderTypeStopLimit:
 		return "StopLimit"
-	case TrailingStop:
+	case OrderTypeTrailingStop:
 		return "TrailingStop"
-	case OCO:
+	case OrderTypeOCO:
 		return "OCO"
 	default:
 		return _unknown
@@ -68,24 +77,29 @@ func (t OrderType) String() string {
 type OrderStatus uint8
 
 const (
-	Pending OrderStatus = iota
-	Created
-	Complete
-	PartialComplete
-	Canceled
+	OrderStatusUnknown OrderStatus = iota
+	OrderStatusPending
+	OrderStatusCreated
+	OrderStatusComplete
+	OrderStatusPartialComplete
+	OrderStatusCanceled
 )
+
+func (s OrderStatus) IsUnknown() bool {
+	return s == OrderStatusUnknown
+}
 
 func (s OrderStatus) String() string {
 	switch s {
-	case Pending:
+	case OrderStatusPending:
 		return "Pending"
-	case Created:
+	case OrderStatusCreated:
 		return "Created"
-	case Canceled:
+	case OrderStatusCanceled:
 		return "Canceled"
-	case PartialComplete:
+	case OrderStatusPartialComplete:
 		return "PartialComplete"
-	case Complete:
+	case OrderStatusComplete:
 		return "Complete"
 	default:
 		return _unknown
