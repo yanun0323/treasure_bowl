@@ -22,6 +22,6 @@ func (su *InfraSuite) SetupSuite() {
 }
 
 func (su *InfraSuite) TestInitConfig() {
-	su.Require().NoError(Init("config"))
+	su.Require().NoError(Init("config-test"))
 	su.Require().NotEmpty(viper.GetString("log.level"))
 }

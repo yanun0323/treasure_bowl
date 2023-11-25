@@ -20,7 +20,7 @@ type CommonSuite struct {
 
 func (su *CommonSuite) SetupSuite() {
 	su.ctx = context.Background()
-	su.Require().NoError(infra.Init("config"))
+	su.Require().NoError(infra.Init("config-test"))
 }
 
 func (su *CommonSuite) TestConnectToPublicClient() {

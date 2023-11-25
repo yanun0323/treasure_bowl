@@ -1,0 +1,7 @@
+log.level: debug
+
+api:
+  bitopro: # check this webpage: https://github.com/bitoex/bitopro-offical-api-docs/tree/master#api-key-setup
+    key: key
+    secret: secret
+    email: email

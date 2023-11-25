@@ -22,7 +22,7 @@ type KlineProviderSuite struct {
 
 func (su *KlineProviderSuite) SetupSuite() {
 	su.ctx = context.Background()
-	su.Require().NoError(infra.Init("config"))
+	su.Require().NoError(infra.Init("config-test"))
 }
 
 func (su *KlineProviderSuite) TestKlineProvider() {
