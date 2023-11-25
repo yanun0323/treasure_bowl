@@ -3,10 +3,10 @@ package service
 import (
 	"context"
 
-	"github.com/yanun0323/pkg/logs"
-
 	"main/internal/domain"
 	"main/internal/model"
+
+	"github.com/yanun0323/pkg/logs"
 )
 
 type bot struct {
@@ -127,7 +127,7 @@ func consumeSignal(ctx context.Context, signal <-chan model.Order, orderServer d
 	for {
 		select {
 		case order := <-signal:
-			if err := orderServer.PostOrder(ctx, order); err != nil {
+			if err := orderServer.PushOrder(ctx, order); err != nil {
 				logs.Get(ctx).Errorf("set order '%s', err: %s", order.ID, err.Error())
 				continue
 			}

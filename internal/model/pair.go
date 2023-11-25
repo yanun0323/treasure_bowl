@@ -1,28 +1,33 @@
 package model
 
+import "strings"
+
 type Pair [2]string
 
 func NewPair(base, quote string) Pair {
-	return [2]string{base, quote}
+	return [2]string{strings.ToUpper(base), strings.ToLower(quote)}
 }
 
-// String return pair string connects with sep char.
-//
-// when sep is empty, pair string connect with '/' .
-func (p Pair) String(sep ...string) string {
+// Uppercase return uppercase string of pair joined by sep char.
+func (p Pair) Uppercase(sep ...string) string {
 	if len(sep) != 0 && len(sep[0]) != 0 {
 		return p[0] + sep[0] + p[1]
 	}
 
-	return p[0] + "/" + p[1]
+	return p[0] + p[1]
 }
 
-func (p *Pair) SetBase(base string) {
-	p[0] = base
+// Lowercase return lowercase string of pair joined by sep char.
+func (p Pair) Lowercase(sep ...string) string {
+	return strings.ToLower(p.Uppercase(sep...))
 }
 
-func (p *Pair) SetQuote(quote string) {
-	p[1] = quote
+func (p *Pair) SetBase(s string) {
+	p[0] = strings.ToUpper(s)
+}
+
+func (p *Pair) SetQuote(s string) {
+	p[1] = strings.ToUpper(s)
 }
 
 func (p Pair) Base() string {

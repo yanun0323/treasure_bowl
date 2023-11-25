@@ -1,6 +1,7 @@
 package model
 
 import (
+	"github.com/pkg/errors"
 	"github.com/yanun0323/decimal"
 )
 
@@ -122,8 +123,20 @@ type Order struct {
 	OCOOrder
 }
 
-func (order *Order) GetTotal() decimal.Decimal {
-	return order.Amount.Total
+func (o *Order) ValidatePushingOrder() error {
+	if o.Action.IsNone() {
+		return errors.New("invalid order action: None")
+	}
+
+	if o.Type.IsUnknown() {
+		return errors.New("unknown order type")
+	}
+
+	return nil
+}
+
+func (o *Order) GetTotal() decimal.Decimal {
+	return o.Amount.Total
 }
 
 type Amount struct {

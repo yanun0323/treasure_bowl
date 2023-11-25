@@ -11,5 +11,5 @@ type OrderServer interface {
 	DisConnect(ctx context.Context) error
 
 	SupportOrderType(ctx context.Context) ([]model.OrderType, error)
-	PostOrder(ctx context.Context, order model.Order) error
+	PushOrder(ctx context.Context, order model.Order) error
 }

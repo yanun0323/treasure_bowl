@@ -7,6 +7,8 @@ package bitopro
 
 import (
 	"context"
+	"fmt"
+	"strconv"
 	"strings"
 	"sync/atomic"
 
@@ -16,6 +18,7 @@ import (
 
 	"github.com/bitoex/bitopro-api-go/pkg/bitopro"
 	"github.com/bitoex/bitopro-api-go/pkg/ws"
+	"github.com/pkg/errors"
 	"github.com/yanun0323/decimal"
 	"github.com/yanun0323/pkg/logs"
 )
@@ -29,6 +32,7 @@ type OrderServer struct {
 
 	wss          *ws.Ws
 	client       *bitopro.AuthAPI
+	clientID     int
 	orderChannel chan model.Order
 }
 
@@ -37,6 +41,7 @@ func NewOrderServer(pair model.Pair, wss *ws.Ws, client *bitopro.AuthAPI) (domai
 		l:            logs.New("bitopro order server", util.LogLevel()),
 		pair:         pair,
 		wss:          wss,
+		clientID:     1,
 		client:       client,
 		orderChannel: make(chan model.Order, 100),
 	}, nil
@@ -72,14 +77,120 @@ func (p *OrderServer) DisConnect(ctx context.Context) error {
 func (p *OrderServer) SupportOrderType(ctx context.Context) ([]model.OrderType, error) {
 	return []model.OrderType{
 		model.OrderTypeLimit,
-		model.OrderTypeStopLimit,
+		// model.OrderTypeStopLimit,
 		model.OrderTypeMarket,
 	}, nil
 }
 
-func (p *OrderServer) PostOrder(ctx context.Context, order model.Order) error {
-	// TODO: Implement me
+func (p *OrderServer) PushOrder(ctx context.Context, o model.Order) error {
+	if err := o.ValidatePushingOrder(); err != nil {
+		return errors.Wrap(err, "validate pushing order")
+	}
+
+	switch o.Action {
+	case model.OrderActionBuy:
+		return p.createOrderBuy(ctx, o)
+	case model.OrderActionSell:
+		return p.createOrderSell(ctx, o)
+	case model.OrderActionCancelBuy, model.OrderActionCancelSell:
+		return p.cancelOrder(ctx, o)
+	default:
+		return errors.New("unsupported order action")
+	}
+}
+
+func (p *OrderServer) createOrderBuy(ctx context.Context, o model.Order) error {
+	var c *bitopro.CreateOrder
+
+	switch o.Type {
+	case model.OrderTypeLimit:
+		c = p.client.CreateOrderLimitBuy(p.clientID, p.pair.Lowercase(), o.Price.String(), o.Amount.Total.String())
+	case model.OrderTypeMarket:
+		c = p.client.CreateOrderMarketBuy(p.clientID, p.pair.Lowercase(), o.Amount.Total.String())
+	case model.OrderTypeStopLimit:
+		// TODO: official package didn't support 'stop limit' this type, need rewrite
+		return errors.New("stop limit doesn't support yet")
+	default:
+		return errors.New("unsupported order type")
+	}
+
+	if c == nil {
+		return errors.New("pushing order connection error")
+	}
+
+	if len(c.Error) != 0 {
+		return errors.New(fmt.Sprintf("push order err: %s", c.Error))
+	}
+
+	if len(c.OrderID) == 0 {
+		return errors.New("empty response order ID")
+	}
+
 	return nil
+}
+
+func (p *OrderServer) createOrderSell(ctx context.Context, o model.Order) error {
+	var c *bitopro.CreateOrder
+
+	switch o.Type {
+	case model.OrderTypeLimit:
+		c = p.client.CreateOrderLimitSell(p.clientID, p.pair.Lowercase(), o.Price.String(), o.Amount.Total.String())
+	case model.OrderTypeMarket:
+		c = p.client.CreateOrderMarketSell(p.clientID, p.pair.Lowercase(), o.Amount.Total.String())
+	case model.OrderTypeStopLimit:
+		// TODO: official package didn't support 'stop limit' this type, need rewrite
+		return errors.New("stop limit doesn't support yet")
+	default:
+		return errors.New("unsupported order type")
+	}
+
+	if c == nil {
+		return errors.New("pushing order connection error")
+	}
+
+	if len(c.Error) != 0 {
+		return errors.New(fmt.Sprintf("push order err: %s", c.Error))
+	}
+
+	if len(c.OrderID) == 0 {
+		return errors.New("empty response order ID")
+	}
+
+	return nil
+}
+
+func (p *OrderServer) cancelOrder(ctx context.Context, o model.Order) error {
+	switch o.Type {
+	case model.OrderTypeLimit, model.OrderTypeMarket:
+		orderID, err := strconv.Atoi(o.ID)
+		if err != nil {
+			return errors.Wrap(err, "convert order Id")
+		}
+
+		if orderID <= 0 {
+			return errors.New(fmt.Sprintf("invalid order ID (%d)", orderID))
+		}
+
+		c := p.client.CancelOrder(p.pair.Lowercase("_"), orderID)
+		if c == nil {
+			return errors.New("pushing order connection error")
+		}
+
+		if len(c.Error) != 0 {
+			return errors.New(fmt.Sprintf("push order err: %s", c.Error))
+		}
+
+		if len(c.OrderID) == 0 {
+			return errors.New("empty response order ID")
+		}
+
+		return nil
+	case model.OrderTypeStopLimit:
+		// TODO: official package didn't support 'stop limit' this type, need rewrite
+		return errors.New("stop limit doesn't support yet")
+	default:
+		return errors.New("unsupported order type")
+	}
 }
 
 func (p *OrderServer) consumeOrder(ctx context.Context, ch <-chan ws.OrdersData) {
@@ -97,7 +208,7 @@ func (p *OrderServer) consumeOrder(ctx context.Context, ch <-chan ws.OrdersData)
 }
 
 func convOrderData(pair model.Pair, d *ws.OrdersData) []model.Order {
-	ods := d.Data[strings.ToLower(pair.String("_"))]
+	ods := d.Data[strings.ToLower(pair.Uppercase("_"))]
 	if len(ods) == 0 {
 		return nil
 	}
@@ -137,7 +248,8 @@ func convOrderType(s string) model.OrderType {
 	case "MARKET":
 		return model.OrderTypeMarket
 	case "STOP_LIMIT":
-		return model.OrderTypeStopLimit
+		// TODO: official package didn't support 'stop limit' this type, need rewrite
+		return model.OrderTypeUnknown
 	default:
 		return model.OrderTypeUnknown
 	}

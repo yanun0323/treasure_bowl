@@ -119,7 +119,7 @@ func (p *KlineProvider) getApiPath() string {
 	return fmt.Sprintf("%s%s%s?resolution=%s&from=%d&to=%d",
 		_restfulHost,
 		_klineUrl,
-		p.pair.String("_"),
+		p.pair.Uppercase("_"),
 		_klineTypeTrans[p.targetKlineType],
 		from.Unix(),
 		to.Unix())

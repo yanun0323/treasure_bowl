@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"sync/atomic"
 
-	"github.com/pkg/errors"
-	"github.com/yanun0323/gollection/v2"
-	"github.com/yanun0323/pkg/logs"
-
 	"main/internal/domain"
 	"main/internal/model"
 	"main/internal/util"
+
+	"github.com/pkg/errors"
+	"github.com/yanun0323/gollection/v2"
+	"github.com/yanun0323/pkg/logs"
 )
 
 type orderServer struct {
@@ -58,13 +58,17 @@ func (p *orderServer) SupportOrderType(ctx context.Context) ([]model.OrderType, 
 	return p.supportedTypeSet.ToSlice(), nil
 }
 
-func (p *orderServer) PostOrder(ctx context.Context, order model.Order) error {
+func (p *orderServer) PushOrder(ctx context.Context, order model.Order) error {
 	if !p.connected.Load() {
 		return errors.New("order server is disconnect")
 	}
 
 	if !p.supportedTypeSet.Contain(order.Type) {
 		return errors.New(fmt.Sprintf("unsupported type: %s", order.Type.String()))
+	}
+
+	if err := order.ValidatePushingOrder(); err != nil {
+		return errors.Wrap(err, "validate pushing order")
 	}
 
 	switch order.Action {
