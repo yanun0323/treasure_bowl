@@ -183,8 +183,8 @@ github.com/rogpeppe/go-internal v1.6.1 h1:/FiVV8dS/e+YqF2JvO3yXRFbBLTIuSDkuC7aBO
 github.com/rogpeppe/go-internal v1.6.1/go.mod h1:xXDCJY+GAPziupqXw64V24skbSoqbTEfhy4qGm1nDQc=
 github.com/shopspring/decimal v1.3.1 h1:2Usl1nmF/WZucqkFZhnfFYxxxu8LG21F6nPQBE5gKV8=
 github.com/shopspring/decimal v1.3.1/go.mod h1:DKyhrW/HYNuLGql+MJL6WCR6knT2jwCFRcu2hWCYk4o=
-github.com/sirupsen/logrus v1.9.0 h1:trlNQbNUG3OdDrDil03MCb1H2o9nJ1x4/5LYw7byDE0=
-github.com/sirupsen/logrus v1.9.0/go.mod h1:naHLuLoDiP4jHNo9R0sCBMtWGeIprob74mVsIT4qYEQ=
+github.com/sirupsen/logrus v1.9.3 h1:dueUQJ1C2q9oE3F7wvmSGAaVtTmUizReu6fjN8uqzbQ=
+github.com/sirupsen/logrus v1.9.3/go.mod h1:naHLuLoDiP4jHNo9R0sCBMtWGeIprob74mVsIT4qYEQ=
 github.com/smartystreets/assertions v1.2.0 h1:42S6lae5dvLc7BrLu/0ugRtcFVjoJNMC/N3yZFZkDFs=
 github.com/smartystreets/assertions v1.2.0/go.mod h1:tcbTF8ujkAEcZ8TElKY+i30BzYlVhC/LOxJk7iOWnoo=
 github.com/smartystreets/goconvey v1.7.2 h1:9RBaZCeXEQ3UselpuwUQHltGVXvdwm6cv1hgR6gDIPg=
@@ -222,10 +222,8 @@ github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8/go.mod h1:VFNgLljT
 github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77/go.mod h1:aYKd//L2LvnjZzWKhF00oedf4jCCReLcmhLdhm1A27Q=
 github.com/yanun0323/decimal v0.2.3 h1:qxjFweHVO2PcIJY1C2Pb8jZDKkxzbbdAeV/KTe6VftY=
 github.com/yanun0323/decimal v0.2.3/go.mod h1:GhBKrjhbi8o+k518x60idaWFdw/imIlxn4hd02mzfy0=
-github.com/yanun0323/gollection/v2 v2.2.0 h1:6SxBFh08GI7cczpXT/8z6CPqfwhYkme3ZfGn/Y34eAQ=
-github.com/yanun0323/gollection/v2 v2.2.0/go.mod h1:mlys78gpYAolqehZDL8w4+6L8aBHfZeUUg4SMHEeB9M=
-github.com/yanun0323/pkg v1.3.1 h1:Q5AWvG79+cRN4pkiWEvUP2rRAhY7NsSy+/uOjEtPjEQ=
-github.com/yanun0323/pkg v1.3.1/go.mod h1:lGMxsitfyKsaOAWtd4ptvsyG+qYGJwIUAowv5HQKcAk=
+github.com/yanun0323/pkg v1.5.0 h1:PbcSW/vnrpP5Gbb/U5L+HZn1Zid2QD26k8IJg6vTFFA=
+github.com/yanun0323/pkg v1.5.0/go.mod h1:Fp7W/+EfDhEWmJtyPHKdBqOYeOLeQL2PYoOc91KGL/g=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.1.32/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=

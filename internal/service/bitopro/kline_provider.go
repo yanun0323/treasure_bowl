@@ -40,7 +40,7 @@ var (
 	}
 )
 
-type KlineProvider struct {
+type klineProvider struct {
 	l               logs.Logger
 	ch              chan model.Kline
 	pair            model.Pair
@@ -49,13 +49,12 @@ type KlineProvider struct {
 	startAt         int64
 }
 
-func NewKlineProvider(pair model.Pair, target model.KlineType) (domain.KlineProvideServer, error) {
+func NewKlineProvider(ctx context.Context, pair model.Pair, target model.KlineType) (domain.KlineProvideServer, error) {
 	if _, ok := _klineTypeTrans[target]; !ok {
 		return nil, errors.New(fmt.Sprintf("unsupported kline type: %s", target.String()))
 	}
-	p := &KlineProvider{
-		l:               logs.New("bitopro kline provider", util.LogLevel()),
-		ch:              make(chan model.Kline, 50),
+	p := &klineProvider{
+		l:               logs.Get(ctx).WithField("server", "bitopro kline"),
 		pair:            pair,
 		targetKlineType: target,
 		cronJob:         cron.New(),
@@ -63,55 +62,78 @@ func NewKlineProvider(pair model.Pair, target model.KlineType) (domain.KlineProv
 	}
 
 	p.cronJob.AddFunc(util.CronSpec(), func() {
-		p.publishKline()
+		p.publishKline(ctx)
 	})
 
 	return p, nil
 }
 
-func (p *KlineProvider) Connect(ctx context.Context) (<-chan model.Kline, error) {
+func (p *klineProvider) Connect(ctx context.Context) (<-chan model.Kline, error) {
+	result, err := p.requestKline(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	if len(p.ch) == 0 {
+		p.ch = make(chan model.Kline, len(result)*2)
+	}
+	for i := range result {
+		p.ch <- result[i]
+	}
+
 	p.cronJob.Start()
 	return p.ch, nil
 }
 
-func (p *KlineProvider) Disconnect(ctx context.Context) error {
+func (p *klineProvider) Disconnect(ctx context.Context) error {
 	p.cronJob.Stop()
 	return nil
 }
 
-func (p *KlineProvider) publishKline() {
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+func (p *klineProvider) requestKline(ctx context.Context) ([]model.Kline, error) {
+	c, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
-	r, err := http.NewRequestWithContext(ctx, http.MethodGet, p.getApiPath(), nil)
+
+	r, err := http.NewRequestWithContext(c, http.MethodGet, p.getApiPath(), nil)
 	if err != nil {
-		p.l.WithError(err).Error("new request")
-		return
+		return nil, errors.Wrap(err, "new request")
 	}
 
 	res, err := http.DefaultClient.Do(r)
 	if err != nil {
-		p.l.WithError(err).Error("send request")
-		return
+		return nil, errors.Wrap(err, "send request")
 	}
 	defer res.Body.Close()
 
 	buf, err := io.ReadAll(res.Body)
 	if err != nil {
-		p.l.WithError(err).Error("read response body")
-		return
+		return nil, errors.Wrap(err, "read response body")
 	}
 
 	ohlc := &OHLC{}
 	if err := json.Unmarshal(buf, ohlc); err != nil {
-		p.l.WithError(err).Error("parsing ohlc json data")
+		errors.Wrap(err, "parsing ohlc json data")
 	}
 
+	result := make([]model.Kline, 0, len(ohlc.Data))
 	for _, data := range ohlc.Data {
-		p.ch <- data.Kline(p.pair, p.targetKlineType)
+		result = append(result, data.Kline(p.pair, p.targetKlineType))
+	}
+	return result, nil
+}
+
+func (p *klineProvider) publishKline(ctx context.Context) {
+	result, err := p.requestKline(ctx)
+	if err != nil {
+		p.l.WithError(err).Error("request kline")
+		return
+	}
+
+	for i := range result {
+		p.ch <- result[i]
 	}
 }
 
-func (p *KlineProvider) getApiPath() string {
+func (p *klineProvider) getApiPath() string {
 	to := time.Now()
 	d := p.targetKlineType.Duration(to.Unix())
 	from := to.Add(99 * d)
@@ -142,6 +164,7 @@ func (d *OHLCKlineData) Kline(p model.Pair, t model.KlineType) model.Kline {
 	return model.Kline{
 		Pair:       p,
 		Type:       t,
+		Source:     model.KlineSourceBitoPro,
 		OpenPrice:  d.Open,
 		ClosePrice: d.Close,
 		MaxPrice:   d.High,

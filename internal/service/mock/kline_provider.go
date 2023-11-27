@@ -15,7 +15,7 @@ import (
 	"github.com/yanun0323/pkg/logs"
 )
 
-type KlineProvider struct {
+type klineProvider struct {
 	l               logs.Logger
 	ch              chan model.Kline
 	pair            model.Pair
@@ -25,9 +25,9 @@ type KlineProvider struct {
 	cacheKlineClose int
 }
 
-func NewKlineProvider(pair model.Pair, target model.KlineType) domain.KlineProvideServer {
-	p := &KlineProvider{
-		l:               logs.New("mock kline provider", util.LogLevel()),
+func NewKlineProvider(ctx context.Context, pair model.Pair, target model.KlineType) domain.KlineProvideServer {
+	p := &klineProvider{
+		l:               logs.Get(ctx).WithField("server", "mock kline provider"),
 		ch:              make(chan model.Kline, 10),
 		pair:            pair,
 		targetKlineType: target,
@@ -40,17 +40,17 @@ func NewKlineProvider(pair model.Pair, target model.KlineType) domain.KlineProvi
 	return p
 }
 
-func (p *KlineProvider) Connect(ctx context.Context) (<-chan model.Kline, error) {
+func (p *klineProvider) Connect(ctx context.Context) (<-chan model.Kline, error) {
 	p.cronJob.Run()
 	return p.ch, nil
 }
 
-func (p *KlineProvider) Disconnect(ctx context.Context) error {
+func (p *klineProvider) Disconnect(ctx context.Context) error {
 	p.cronJob.Stop()
 	return nil
 }
 
-func (p *KlineProvider) publishKline() {
+func (p *klineProvider) publishKline() {
 	k := randomKline(p.pair, p.targetKlineType, p.cacheKlineClose)
 	i, _ := strconv.Atoi(k.ClosePrice.String())
 	p.cacheKlineClose = i

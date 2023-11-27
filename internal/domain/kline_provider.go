@@ -10,8 +10,3 @@ type KlineProvideServer interface {
 	Connect(ctx context.Context) (<-chan model.Kline, error)
 	Disconnect(ctx context.Context) error
 }
-
-type AssetProvideServer interface {
-	Connect(ctx context.Context) (<-chan model.Account, error)
-	Disconnect(ctx context.Context) error
-}

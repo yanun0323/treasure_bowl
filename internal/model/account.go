@@ -2,60 +2,66 @@ package model
 
 import (
 	"fmt"
-
-	"main/internal/util"
+	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/yanun0323/decimal"
 )
 
+type Account interface {
+	Available(currency string) decimal.Decimal
+	Unavailable(currency string) decimal.Decimal
+	Timestamp() int64 /* unix second */
+}
+
 type Balance struct {
-	Available decimal.Decimal
-	InTrade   decimal.Decimal
-	Locked    decimal.Decimal
+	Available   decimal.Decimal
+	Unavailable decimal.Decimal
 }
 
-type Account struct {
-	Balances  util.SyncMap[string, Balance]
-	Timestamp int64
+type account struct {
+	balance   map[string]Balance
+	timestamp int64
 }
 
-func NewAccount() Account {
-	return Account{
-		Balances: util.NewSyncMap[string, Balance](),
+func NewAccount(balances ...map[string]Balance) Account {
+	m := map[string]Balance{}
+	if len(balances) != 0 {
+		m = balances[1]
+	}
+
+	return &account{
+		balance:   m,
+		timestamp: time.Now().Unix(),
 	}
 }
 
-func (acc *Account) MoveToInTrade(currency string, amount decimal.Decimal) error {
-	b, ok := acc.Balances.Load(currency)
-	if !ok {
-		return errors.New(fmt.Sprintf("currency %s has no balance", currency))
-	}
+func (a account) Available(currency string) decimal.Decimal {
+	return a.balance[strings.ToUpper(currency)].Available
+}
 
-	if b.Available.Less(amount) {
-		return errors.New(fmt.Sprintf("available balance of currency %s is not enough. need: %s, actual: %s", currency, amount, b.Available))
+func (a account) Unavailable(currency string) decimal.Decimal {
+	return a.balance[strings.ToUpper(currency)].Unavailable
+}
+
+func (a account) Timestamp() int64 {
+	return a.timestamp
+}
+
+func (a *account) Trade(currency string, amount decimal.Decimal) error {
+	c := strings.ToUpper(currency)
+	b := a.balance[c]
+	if !b.Available.GreaterOrEqual(amount) {
+		return errors.New(fmt.Sprintf("%s insufficient balance, need %s but left %s ",
+			c,
+			amount,
+			b.Available,
+		))
 	}
 
 	b.Available = b.Available.Sub(amount)
-	b.InTrade = b.InTrade.Add(amount)
-	acc.Balances.Store(currency, b)
-
-	return nil
-}
-
-func (acc *Account) MoveToAvailable(currency string, amount decimal.Decimal) error {
-	b, ok := acc.Balances.Load(currency)
-	if !ok {
-		return errors.New(fmt.Sprintf("currency %s has no balance", currency))
-	}
-
-	if b.InTrade.Less(amount) {
-		return errors.New(fmt.Sprintf("trading balance of currency %s is not enough. need: %s, actual: %s", currency, amount, b.InTrade))
-	}
-
-	b.InTrade = b.InTrade.Sub(amount)
-	b.Available = b.Available.Add(amount)
-	acc.Balances.Store(currency, b)
-
+	b.Unavailable = b.Unavailable.Add(amount)
+	a.balance[c] = b
 	return nil
 }

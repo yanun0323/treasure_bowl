@@ -5,21 +5,23 @@ A simple crypto trading bot.
 # Requirement
 #### _Go 1.21.4 or higher_
 
-# Flow Design
+# Structure Design
+### General structure
 ```mermaid
 graph TD
     KlineProvider{"K-Line Provider\nInterface"}
-    AssetProvider{"Asset Provider\nInterface"}
-    Strategy{Strategy\nInterface}
-    Order{Order\nInterface}
+    TradeServer{"Trade Server\nInterface"}
+    TradeServer2{"Trade Server\nInterface"}
+    STG(("Strategy Logic"))
 
-    KlineProvider ===>|1. Listen K-Line Changing| BOT
-    AssetProvider ==>|2. Listen Asset Changing| BOT
-    BOT ==>|3. Push K-Line/Asset/Order| Strategy 
-    Strategy -->|4. Listen Signal| BOT
-    BOT -.->|5. Create/Cancel Order| Order
-    Order -.->|6. Push Order| Strategy
+    KlineProvider ==>|"get & listening price changing"| STG 
+    TradeServer ==>|"get asset & order in the beginning\nlistening asset/order changing"| STG
+
+    STG ==>|"push order according to strategy\nget changed account asset"| TradeServer2
+
+    TradeServer -.-|same| TradeServer2
 ```
+
 # TODO
 - KlineProvider: victor 研究中
 - AssetProvider
