@@ -28,7 +28,7 @@ type account struct {
 func NewAccount(balances ...map[string]Balance) Account {
 	m := map[string]Balance{}
 	if len(balances) != 0 {
-		m = balances[1]
+		m = balances[0]
 	}
 
 	return &account{

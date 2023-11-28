@@ -23,17 +23,21 @@ const (
 	_keyStrategy = "STG"
 
 	/* Strategy Value */
-	_strategyMaStandup        = "STANDUP"
-	_strategyExchangeFollower = "FOLLOW"
+	_strategyMaStandup        = "standup"
+	_strategyExchangeFollower = "follow"
+	_strategyInspector        = "inspector"
 
 	/* Provider Key */
 	_keyProviderKline = "KLINE"
 	_keyProviderTrade = "TRADE"
 
 	/* Provider Value */
-	_providerMock    = "MOCK"
-	_providerBitopro = "BITOPRO"
-	_providerBinance = "BINANCE"
+	_providerMock    = "mock"
+	_providerBitopro = "bitopro"
+	_providerBinance = "binance"
+
+	/* Provider Param Key */
+	_keyProviderKlineDuration = "KLINE_DURATION"
 )
 
 func Run() {
@@ -44,7 +48,7 @@ func Run() {
 		l.Fatalf("missing '%s' environment key", _keyPair)
 	}
 
-	spr := strings.Split(pr, "/")
+	spr := strings.Split(pr, "_")
 	if len(spr) != 2 {
 		l.Fatalf("unsupported pair %s, expected connecting with '/'. e.g. BTC/USDT", pr)
 	}
@@ -55,19 +59,29 @@ func Run() {
 
 	pair := model.NewPair(spr[0], spr[1])
 
-	stg := strings.ToUpper(os.Getenv(_keyStrategy))
+	stg := strings.ToLower(os.Getenv(_keyStrategy))
 	if len(stg) == 0 {
 		l.Fatalf("missing '%s' environment key", _keyStrategy)
 	}
 
-	kls := strings.ToUpper(os.Getenv(_keyProviderKline))
+	kls := strings.ToLower(os.Getenv(_keyProviderKline))
 	if len(kls) == 0 {
 		l.Fatalf("missing '%s' environment key", _keyProviderKline)
 	}
 
-	tds := strings.ToUpper(os.Getenv(_keyProviderTrade))
+	tds := strings.ToLower(os.Getenv(_keyProviderTrade))
 	if len(tds) == 0 {
 		l.Fatalf("missing '%s' environment key", _keyProviderTrade)
+	}
+
+	dr := strings.ToLower(os.Getenv(_keyProviderKlineDuration))
+	if len(dr) == 0 {
+		l.Fatalf("missing '%s' environment key", _keyProviderKlineDuration)
+	}
+
+	kt := model.KlineType(dr)
+	if !kt.Validate() {
+		l.Fatalf("unsupported kline duration '%s'", dr)
 	}
 
 	l = l.WithFields(map[string]interface{}{
@@ -90,14 +104,16 @@ func Run() {
 	for _, kl := range strings.Split(kls, ",") {
 		switch kl {
 		case _providerMock:
-			kline = append(kline, mock.NewKlineProvider(ctx, pair, model.K1m))
+			kline = append(kline, mock.NewKlineProvider(ctx, pair, kt))
 		case _providerBitopro:
-			k, err := bitopro.NewKlineProvider(ctx, pair, model.K1m)
+			k, err := bitopro.NewKlineProvider(ctx, pair, kt)
 			if err != nil {
 				l.WithError(err).Fatal("init bitopro kline provider")
 			}
 			kline = append(kline, k)
 		case _providerBinance:
+		default:
+			l.Fatalf("unsupported kline provider '%s'", kl)
 		}
 	}
 
@@ -116,6 +132,8 @@ func Run() {
 			}
 			trade = append(trade, t)
 		case _providerBinance:
+		default:
+			l.Fatalf("unsupported trade server '%s'", td)
 		}
 	}
 
@@ -129,10 +147,15 @@ func Run() {
 			l.Fatal("require at least one trade provider")
 		}
 
-		bot, err = service.NewMaStandupBot(ctx, pair, service.MaStandupBotProvider{
+		pv := service.StdBotProvider{
 			Kline: kline[0],
 			Trade: trade[0],
-		})
+		}
+		if err := pv.Validate(); err != nil {
+			l.WithError(err).Error("validate bot provider")
+		}
+
+		bot, err = service.NewMaStandupBot(ctx, pair, pv)
 		if err != nil {
 			l.WithError(err).Fatal("create ma standup bot")
 		}
@@ -145,14 +168,33 @@ func Run() {
 			l.Fatal("require at least one trade provider")
 		}
 
-		bot, err = service.NewExchangeFollowerBot(ctx, pair, service.ExchangeFollowerProvider{
+		pv := service.ExchangeFollowerProvider{
 			Source: kline[0],
 			Target: kline[1],
 			Trade:  trade[0],
-		})
+		}
+		if err := pv.Validate(); err != nil {
+			l.WithError(err).Error("validate bot provider")
+		}
+
+		bot, err = service.NewExchangeFollowerBot(ctx, pair, pv)
 		if err != nil {
 			l.WithError(err).Fatal("create exchange follower bot")
 		}
+	case _strategyInspector:
+		if len(kline) == 0 {
+			l.Fatal("require at least one kline provider")
+		}
+		bot, err = service.NewInspectorBot(ctx, pair, kline[0])
+		if err != nil {
+			l.WithError(err).Fatal("create inspector bot")
+		}
+	default:
+		l.Fatalf("unsupported strategy '%s'", stg)
+	}
+
+	if bot == nil {
+		l.Fatal("nil bot")
 	}
 
 	if err := bot.Init(ctx); err != nil {

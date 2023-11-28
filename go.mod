@@ -9,6 +9,7 @@ require (
 	github.com/spf13/viper v1.13.0
 	github.com/stretchr/testify v1.8.4
 	github.com/yanun0323/decimal v0.2.3
+	github.com/yanun0323/gollection/v2 v2.2.0
 	github.com/yanun0323/pkg v1.5.0
 )
 

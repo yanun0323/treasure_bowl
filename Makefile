@@ -1,8 +1,15 @@
 .PHONY:
 
+PAIR=BTC_TWD
+STG=inspector
+KLINE=bitopro,mock
+KLINE_DURATION=1m
+TRADE=mock
+
 run:
-	go run ./main.go
-test:
-	go test --count=1 ./...
-test.v:
-	go test --count=1 -v ./...
+	PAIR=${PAIR} \
+	STG=${STG} \
+	KLINE=${KLINE} \
+	KLINE_DURATION=${KLINE_DURATION} \
+	TRADE=${TRADE} \
+	go run ${CURDIR}/main.go

@@ -1,6 +1,10 @@
 package model
 
-import "github.com/yanun0323/decimal"
+import (
+	"reflect"
+
+	"github.com/yanun0323/decimal"
+)
 
 type KlineSource int
 
@@ -26,4 +30,27 @@ type Kline struct {
 	Volume     decimal.Decimal
 
 	Timestamp int64 /* end at (unix second) */
+}
+
+func (k *Kline) IsTypeEqual(kk *Kline) bool {
+	return k.Pair == kk.Pair && k.Type == kk.Type && k.Source == kk.Source && k.Timestamp == kk.Timestamp
+}
+
+func (k *Kline) IsEqual(kk *Kline) bool {
+	if !k.IsTypeEqual(kk) {
+		return false
+	}
+	return reflect.DeepEqual(*k, *kk)
+}
+
+func (k *Kline) Update(kk *Kline) {
+	k.Pair = kk.Pair
+	k.Type = kk.Type
+	k.Source = kk.Source
+	k.OpenPrice = kk.OpenPrice
+	k.ClosePrice = kk.ClosePrice
+	k.MaxPrice = kk.MaxPrice
+	k.MinPrice = kk.MinPrice
+	k.Volume = kk.Volume
+	k.Timestamp = kk.Timestamp
 }

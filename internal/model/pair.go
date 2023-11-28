@@ -5,7 +5,7 @@ import "strings"
 type Pair [2]string
 
 func NewPair(base, quote string) Pair {
-	return [2]string{strings.ToUpper(base), strings.ToLower(quote)}
+	return [2]string{strings.ToUpper(base), strings.ToUpper(quote)}
 }
 
 // Uppercase return uppercase string of pair joined by sep char.

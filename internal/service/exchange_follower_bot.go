@@ -10,7 +10,7 @@ import (
 	"github.com/yanun0323/pkg/logs"
 )
 
-type ExchangeFollowerBot struct {
+type exchangeFollowerBot struct {
 	l         logs.Logger
 	pair      model.Pair
 	kpsSource domain.KlineProvideServer
@@ -41,7 +41,7 @@ func (p *ExchangeFollowerProvider) Validate() error {
 }
 
 func NewExchangeFollowerBot(ctx context.Context, pr model.Pair, pd ExchangeFollowerProvider) (domain.StrategyBot, error) {
-	return &ExchangeFollowerBot{
+	return &exchangeFollowerBot{
 		l:         logs.Get(ctx).WithField("server", "exchange follower bot"),
 		pair:      pr,
 		kpsSource: pd.Source,
@@ -50,14 +50,14 @@ func NewExchangeFollowerBot(ctx context.Context, pr model.Pair, pd ExchangeFollo
 	}, nil
 }
 
-func (bot *ExchangeFollowerBot) Init(ctx context.Context) error {
+func (bot *exchangeFollowerBot) Init(ctx context.Context) error {
 	return nil
 }
 
-func (bot *ExchangeFollowerBot) Run(ctx context.Context) error {
+func (bot *exchangeFollowerBot) Run(ctx context.Context) error {
 	return nil
 }
 
-func (bot *ExchangeFollowerBot) Shutdown(ctx context.Context) error {
+func (bot *exchangeFollowerBot) Shutdown(ctx context.Context) error {
 	return nil
 }

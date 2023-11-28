@@ -4,24 +4,33 @@ import (
 	"time"
 )
 
-type KlineType uint8
+type KlineType string
 
 const (
-	K1m KlineType = iota
-	K3m
-	K5m
-	K15m
-	K30m
-	K1h
-	K2h
-	K4h
-	K6h
-	K8h
-	K12h
-	K1d
-	K1w
-	K1M
+	K1m  KlineType = "1m"
+	K3m  KlineType = "3m"
+	K5m  KlineType = "5m"
+	K15m KlineType = "15m"
+	K30m KlineType = "30m"
+	K1h  KlineType = "1h"
+	K2h  KlineType = "2h"
+	K4h  KlineType = "4h"
+	K6h  KlineType = "6h"
+	K8h  KlineType = "8h"
+	K12h KlineType = "12h"
+	K1d  KlineType = "1d"
+	K1w  KlineType = "1w"
+	K1M  KlineType = "1M"
 )
+
+func (t KlineType) Validate() bool {
+	switch t {
+	case K1m, K3m, K5m, K15m, K30m, K1h, K2h, K4h, K6h, K8h, K12h, K1d, K1w, K1M:
+		return true
+	default:
+		return false
+	}
+}
 
 func (t KlineType) String() string {
 	switch t {
