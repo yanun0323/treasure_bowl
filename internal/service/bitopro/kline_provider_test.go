@@ -29,7 +29,7 @@ func (su *KlineProviderSuite) TestKlineProvider() {
 	p, err := NewKlineProvider(su.ctx, model.NewPair("BTC", "TWD"), model.K1m)
 	su.Require().NoError(err)
 
-	ch, err := p.Connect(su.ctx)
+	ch, err := p.Connect(su.ctx, 10)
 	su.Require().NoError(err)
 	defer p.Disconnect(su.ctx)
 

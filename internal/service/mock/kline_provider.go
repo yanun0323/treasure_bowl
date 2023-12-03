@@ -40,7 +40,7 @@ func NewKlineProvider(ctx context.Context, pair model.Pair, target model.KlineTy
 	return p
 }
 
-func (p *klineProvider) Connect(ctx context.Context) (<-chan model.Kline, error) {
+func (p *klineProvider) Connect(ctx context.Context, requiredKlineInitCount int) (<-chan model.Kline, error) {
 	p.cronJob.Run()
 	return p.ch, nil
 }

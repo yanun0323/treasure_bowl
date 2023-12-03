@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/yanun0323/decimal"
@@ -41,6 +42,13 @@ func (k *Kline) IsEqual(kk *Kline) bool {
 		return false
 	}
 	return reflect.DeepEqual(*k, *kk)
+}
+
+func (k Kline) String() string {
+	return fmt.Sprintf("%s %s %d, ohlc: %s %s %s %s ",
+		k.Pair.Uppercase("_"), k.Type.String(), k.Timestamp,
+		k.OpenPrice, k.MaxPrice, k.MinPrice, k.ClosePrice,
+	)
 }
 
 func (k *Kline) Update(kk *Kline) {

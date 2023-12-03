@@ -68,8 +68,8 @@ func NewKlineProvider(ctx context.Context, pair model.Pair, target model.KlineTy
 	return p, nil
 }
 
-func (p *klineProvider) Connect(ctx context.Context) (<-chan model.Kline, error) {
-	result, err := p.requestKline(context.Background())
+func (p *klineProvider) Connect(ctx context.Context, requiredKlineInitCount int) (<-chan model.Kline, error) {
+	result, err := p.requestKline(context.Background(), requiredKlineInitCount)
 	if err != nil {
 		return nil, err
 	}
@@ -89,11 +89,11 @@ func (p *klineProvider) Disconnect(ctx context.Context) error {
 	return nil
 }
 
-func (p *klineProvider) requestKline(ctx context.Context) ([]model.Kline, error) {
+func (p *klineProvider) requestKline(ctx context.Context, count int) ([]model.Kline, error) {
 	c, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 
-	r, err := http.NewRequestWithContext(c, http.MethodGet, p.getApiPath(), nil)
+	r, err := http.NewRequestWithContext(c, http.MethodGet, p.getApiPath(count), nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "new request")
 	}
@@ -122,7 +122,7 @@ func (p *klineProvider) requestKline(ctx context.Context) ([]model.Kline, error)
 }
 
 func (p *klineProvider) publishKline(ctx context.Context) {
-	result, err := p.requestKline(ctx)
+	result, err := p.requestKline(ctx, 5)
 	if err != nil {
 		p.l.WithError(err).Error("request kline")
 		return
@@ -133,10 +133,10 @@ func (p *klineProvider) publishKline(ctx context.Context) {
 	}
 }
 
-func (p *klineProvider) getApiPath() string {
+func (p *klineProvider) getApiPath(klineCount int) string {
 	to := time.Now()
 	d := p.targetKlineType.Duration(to.Unix())
-	from := to.Add(99 * d)
+	from := to.Add(time.Duration(klineCount) * d)
 
 	return fmt.Sprintf("%s%s%s?resolution=%s&from=%d&to=%d",
 		_restfulHost,

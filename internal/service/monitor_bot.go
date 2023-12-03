@@ -17,7 +17,6 @@ type inspectorBot struct {
 	kps    domain.KlineProvideServer
 	ch     <-chan model.Kline
 	cancel context.CancelFunc
-	cache  gollection.SyncPriorityQueue[*model.Kline]
 	tree   gollection.SyncBTree[int64, *model.Kline]
 	cap    int
 }
@@ -27,19 +26,16 @@ func NewInspectorBot(ctx context.Context, pr model.Pair, kps domain.KlineProvide
 		l:    logs.Get(ctx).WithField("server", "monitor bot"),
 		pair: pr,
 		kps:  kps,
-		cap:  97,
+		cap:  200,
 	}, nil
 }
 
 func (bot *inspectorBot) Init(ctx context.Context) error {
-	ch, err := bot.kps.Connect(ctx)
+	ch, err := bot.kps.Connect(ctx, bot.cap)
 	if err != nil {
 		return errors.Wrap(err, "inti bot")
 	}
 	bot.ch = ch
-	bot.cache = gollection.NewSyncPriorityQueue[*model.Kline](func(k1, k2 *model.Kline) bool {
-		return k1.Timestamp < k2.Timestamp
-	})
 	bot.tree = gollection.NewSyncBTree[int64, *model.Kline]()
 	return nil
 }
@@ -56,29 +52,30 @@ func (bot *inspectorBot) Run(ctx context.Context) error {
 			case k := <-bot.ch:
 				kk, ok := bot.tree.Search(k.Timestamp)
 				if ok {
-					if k.IsEqual(kk) {
-						continue
+					if !k.IsEqual(kk) {
+						bot.l.Warnf("consume: %s", k)
+						bot.l.Warnf("updated: %s\n", kk)
+						kk.Update(&k)
 					}
-
-					if k.IsTypeEqual(kk) {
-						k.Update(kk)
-					} else {
-						ok = false
-					}
+					continue
 				}
 
-				if !ok {
+				if bot.tree.Len() < bot.cap {
 					bot.tree.Insert(k.Timestamp, &k)
-					bot.cache.Enqueue(&k)
-					if bot.cache.Len() >= bot.cap {
-						dk := bot.cache.Dequeue()
-						bot.l.Debugf("drop kline from cache: %+v", dk)
-						_, ok = bot.tree.Remove(dk.Timestamp)
-						bot.l.Debugf("remove: %+v, cache: %d, tree: %d", ok, bot.cache.Len(), bot.tree.Len())
-					}
+					bot.l.Info(k.String())
+					continue
+
 				}
 
-				bot.l.Infof("%+v", k)
+				minTS, _, _ := bot.tree.Min()
+				if k.Timestamp < minTS {
+					continue
+				}
+
+				_, _, _ = bot.tree.RemoveMin()
+				bot.tree.Insert(k.Timestamp, &k)
+
+				bot.l.Infof("consume: %s", k)
 			case <-c.Done():
 				bot.l.Info("stop consuming kline")
 				return

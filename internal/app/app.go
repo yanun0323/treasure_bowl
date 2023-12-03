@@ -84,12 +84,10 @@ func Run() {
 		l.Fatalf("unsupported kline duration '%s'", dr)
 	}
 
-	l = l.WithFields(map[string]interface{}{
-		"pair":     pr,
-		"strategy": stg,
-		"kline":    kls,
-		"trade":    tds,
-	})
+	l.Info("pair: ", pr)
+	l.Info("strategy: ", stg)
+	l.Info("kline: ", kls)
+	l.Info("trade: ", tds)
 
 	ctx, l := l.Attach(context.Background())
 

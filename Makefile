@@ -1,6 +1,6 @@
 .PHONY:
 
-PAIR=BTC_TWD
+PAIR=BTC_USDT
 STG=inspector
 KLINE=bitopro,mock
 KLINE_DURATION=1m
