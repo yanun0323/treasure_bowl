@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"main/internal/domain"
-	"main/internal/model"
+	"main/internal/entity"
 	"main/internal/util"
 
 	"github.com/pkg/errors"
@@ -25,31 +25,31 @@ const (
 )
 
 var (
-	_klineTypeTrans = map[model.KlineType]string{
-		model.K1m:  "1m",
-		model.K5m:  "5m",
-		model.K15m: "15m",
-		model.K30m: "30m",
-		model.K1h:  "1h",
-		model.K4h:  "4h",
-		model.K6h:  "6h",
-		model.K12h: "12h",
-		model.K1d:  "1d",
-		model.K1w:  "1w",
-		model.K1M:  "1M",
+	_klineTypeTrans = map[entity.KlineType]string{
+		entity.K1m:  "1m",
+		entity.K5m:  "5m",
+		entity.K15m: "15m",
+		entity.K30m: "30m",
+		entity.K1h:  "1h",
+		entity.K4h:  "4h",
+		entity.K6h:  "6h",
+		entity.K12h: "12h",
+		entity.K1d:  "1d",
+		entity.K1w:  "1w",
+		entity.K1M:  "1M",
 	}
 )
 
 type klineProvider struct {
 	l               logs.Logger
-	ch              chan model.Kline
-	pair            model.Pair
-	targetKlineType model.KlineType
+	ch              chan entity.Kline
+	pair            entity.Pair
+	targetKlineType entity.KlineType
 	cronJob         *cron.Cron
 	startAt         int64
 }
 
-func NewKlineProvider(ctx context.Context, pair model.Pair, target model.KlineType) (domain.KlineProvideServer, error) {
+func NewKlineProvider(ctx context.Context, pair entity.Pair, target entity.KlineType) (domain.KlineProvideServer, error) {
 	if _, ok := _klineTypeTrans[target]; !ok {
 		return nil, errors.New(fmt.Sprintf("unsupported kline type: %s", target.String()))
 	}
@@ -68,13 +68,13 @@ func NewKlineProvider(ctx context.Context, pair model.Pair, target model.KlineTy
 	return p, nil
 }
 
-func (p *klineProvider) Connect(ctx context.Context, requiredKlineInitCount int) (<-chan model.Kline, error) {
+func (p *klineProvider) Connect(ctx context.Context, requiredKlineInitCount int) (<-chan entity.Kline, error) {
 	result, err := p.requestKline(context.Background(), requiredKlineInitCount)
 	if err != nil {
 		return nil, err
 	}
 	if len(p.ch) == 0 {
-		p.ch = make(chan model.Kline, len(result)*2)
+		p.ch = make(chan entity.Kline, len(result)*2)
 	}
 	for i := range result {
 		p.ch <- result[i]
@@ -89,7 +89,7 @@ func (p *klineProvider) Disconnect(ctx context.Context) error {
 	return nil
 }
 
-func (p *klineProvider) requestKline(ctx context.Context, count int) ([]model.Kline, error) {
+func (p *klineProvider) requestKline(ctx context.Context, count int) ([]entity.Kline, error) {
 	c, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 
@@ -114,7 +114,7 @@ func (p *klineProvider) requestKline(ctx context.Context, count int) ([]model.Kl
 		errors.Wrap(err, "parsing ohlc json data")
 	}
 
-	result := make([]model.Kline, 0, len(ohlc.Data))
+	result := make([]entity.Kline, 0, len(ohlc.Data))
 	for _, data := range ohlc.Data {
 		result = append(result, data.Kline(p.pair, p.targetKlineType))
 	}
@@ -160,11 +160,11 @@ type OHLCKlineData struct {
 	Volume    decimal.Decimal `json:"volume"`
 }
 
-func (d *OHLCKlineData) Kline(p model.Pair, t model.KlineType) model.Kline {
-	return model.Kline{
+func (d *OHLCKlineData) Kline(p entity.Pair, t entity.KlineType) entity.Kline {
+	return entity.Kline{
 		Pair:       p,
 		Type:       t,
-		Source:     model.KlineSourceBitoPro,
+		Source:     entity.KlineSourceBitoPro,
 		OpenPrice:  d.Open,
 		ClosePrice: d.Close,
 		MaxPrice:   d.High,

@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"main/internal/domain"
-	"main/internal/model"
+	"main/internal/entity"
 
 	"github.com/pkg/errors"
 	"github.com/yanun0323/decimal"
@@ -16,19 +16,19 @@ import (
 
 type tradeServer struct {
 	l         logs.Logger
-	pair      model.Pair
-	account   model.Account
-	order     chan model.Order
+	pair      entity.Pair
+	account   entity.Account
+	order     chan entity.Order
 	connected bool
-	supported map[model.OrderType]bool
+	supported map[entity.OrderType]bool
 }
 
-func NewTradeServer(ctx context.Context, pr model.Pair, supportedOrderTypes ...model.OrderType) (domain.TradeServer, error) {
+func NewTradeServer(ctx context.Context, pr entity.Pair, supportedOrderTypes ...entity.OrderType) (domain.TradeServer, error) {
 	if len(supportedOrderTypes) == 0 {
 		return nil, errors.New("need at least 1 supported order type")
 	}
 
-	m := make(map[model.OrderType]bool, len(supportedOrderTypes))
+	m := make(map[entity.OrderType]bool, len(supportedOrderTypes))
 	for _, ot := range supportedOrderTypes {
 		m[ot] = true
 	}
@@ -36,16 +36,16 @@ func NewTradeServer(ctx context.Context, pr model.Pair, supportedOrderTypes ...m
 	return &tradeServer{
 		l:    logs.Get(ctx).WithField("server", "mock trade server"),
 		pair: pr,
-		account: model.NewAccount(map[string]model.Balance{
+		account: entity.NewAccount(map[string]entity.Balance{
 			"BTC":  {Available: decimal.Require("1_000_000_000"), Unavailable: "0"},
 			"USDT": {Available: decimal.Require("1_000_000_000"), Unavailable: "0"},
 		}),
-		order:     make(chan model.Order, 100),
+		order:     make(chan entity.Order, 100),
 		supported: m,
 	}, nil
 }
 
-func (s *tradeServer) Connect(context.Context) (model.Account, <-chan model.Order, error) {
+func (s *tradeServer) Connect(context.Context) (entity.Account, <-chan entity.Order, error) {
 	s.connected = true
 	return s.account, s.order, nil
 }
@@ -59,16 +59,16 @@ func (s *tradeServer) Disconnect(context.Context) error {
 	return nil
 }
 
-func (s *tradeServer) IsSupported(o model.OrderType) bool {
+func (s *tradeServer) IsSupported(o entity.OrderType) bool {
 	return s.supported[o]
 }
 
-func (s *tradeServer) PushOrder(ctx context.Context, order model.Order) (model.Account, error) {
+func (s *tradeServer) PushOrder(ctx context.Context, order entity.Order) (entity.Account, error) {
 	switch order.Action {
-	case model.OrderActionBuy, model.OrderActionSell, model.OrderActionCancelBuy, model.OrderActionCancelSell:
+	case entity.OrderActionBuy, entity.OrderActionSell, entity.OrderActionCancelBuy, entity.OrderActionCancelSell:
 		order.ID = strconv.FormatInt(time.Now().UnixMilli(), 10)
-		order.Status = model.OrderStatusComplete
-		order.Action = model.OrderActionNone
+		order.Status = entity.OrderStatusComplete
+		order.Action = entity.OrderActionNone
 		s.order <- order
 		return s.account, nil
 	default:

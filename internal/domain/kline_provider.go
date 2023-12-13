@@ -3,10 +3,10 @@ package domain
 import (
 	"context"
 
-	"main/internal/model"
+	"main/internal/entity"
 )
 
 type KlineProvideServer interface {
-	Connect(ctx context.Context, requiredKlineInitCount int) (<-chan model.Kline, error)
+	Connect(ctx context.Context, requiredKlineInitCount int) (<-chan entity.Kline, error)
 	Disconnect(ctx context.Context) error
 }

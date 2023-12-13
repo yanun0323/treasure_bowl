@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	"main/internal/model"
+	"main/internal/entity"
 
 	"github.com/bitoex/bitopro-api-go/pkg/bitopro"
 	"github.com/pkg/errors"
@@ -13,7 +13,7 @@ import (
 
 var (
 	/* Check Interface Implement */
-	_ model.Account = (*account)(nil)
+	_ entity.Account = (*account)(nil)
 )
 
 type account struct {
@@ -22,7 +22,7 @@ type account struct {
 }
 
 // convAccount converts bitopro account into model account.
-func convAccount(a *bitopro.Account) (model.Account, error) {
+func convAccount(a *bitopro.Account) (entity.Account, error) {
 	if a == nil {
 		return nil, errors.New("nil account data")
 	}

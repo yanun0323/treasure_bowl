@@ -8,7 +8,7 @@ import (
 	"syscall"
 
 	"main/internal/domain"
-	"main/internal/model"
+	"main/internal/entity"
 	"main/internal/service"
 	"main/internal/service/bitopro"
 	"main/internal/service/mock"
@@ -57,7 +57,7 @@ func Run() {
 		l.Fatalf("empty pair base/quote %s", pr)
 	}
 
-	pair := model.NewPair(spr[0], spr[1])
+	pair := entity.NewPair(spr[0], spr[1])
 
 	stg := strings.ToLower(os.Getenv(_keyStrategy))
 	if len(stg) == 0 {
@@ -79,7 +79,7 @@ func Run() {
 		l.Fatalf("missing '%s' environment key", _keyProviderKlineDuration)
 	}
 
-	kt := model.KlineType(dr)
+	kt := entity.KlineType(dr)
 	if !kt.Validate() {
 		l.Fatalf("unsupported kline duration '%s'", dr)
 	}
@@ -118,7 +118,7 @@ func Run() {
 	for _, td := range strings.Split(tds, ",") {
 		switch td {
 		case _providerMock:
-			t, err := mock.NewTradeServer(ctx, pair, model.OrderTypeLimit, model.OrderTypeMarket)
+			t, err := mock.NewTradeServer(ctx, pair, entity.OrderTypeLimit, entity.OrderTypeMarket)
 			if err != nil {
 				l.WithError(err).Fatal("init mock trade server")
 			}

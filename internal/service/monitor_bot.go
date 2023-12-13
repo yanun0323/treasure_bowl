@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"main/internal/domain"
-	"main/internal/model"
+	"main/internal/entity"
 
 	"github.com/pkg/errors"
 	"github.com/yanun0323/gollection/v2"
@@ -13,15 +13,15 @@ import (
 
 type inspectorBot struct {
 	l      logs.Logger
-	pair   model.Pair
+	pair   entity.Pair
 	kps    domain.KlineProvideServer
-	ch     <-chan model.Kline
+	ch     <-chan entity.Kline
 	cancel context.CancelFunc
-	tree   gollection.SyncBTree[int64, *model.Kline]
+	tree   gollection.SyncBTree[int64, *entity.Kline]
 	cap    int
 }
 
-func NewInspectorBot(ctx context.Context, pr model.Pair, kps domain.KlineProvideServer) (domain.StrategyBot, error) {
+func NewInspectorBot(ctx context.Context, pr entity.Pair, kps domain.KlineProvideServer) (domain.StrategyBot, error) {
 	return &inspectorBot{
 		l:    logs.Get(ctx).WithField("server", "monitor bot"),
 		pair: pr,
@@ -36,7 +36,7 @@ func (bot *inspectorBot) Init(ctx context.Context) error {
 		return errors.Wrap(err, "inti bot")
 	}
 	bot.ch = ch
-	bot.tree = gollection.NewSyncBTree[int64, *model.Kline]()
+	bot.tree = gollection.NewSyncBTree[int64, *entity.Kline]()
 	return nil
 }
 

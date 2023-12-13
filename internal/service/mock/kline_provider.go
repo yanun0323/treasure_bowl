@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"main/internal/domain"
-	"main/internal/model"
+	"main/internal/entity"
 	"main/internal/util"
 
 	"github.com/robfig/cron"
@@ -17,18 +17,18 @@ import (
 
 type klineProvider struct {
 	l               logs.Logger
-	ch              chan model.Kline
-	pair            model.Pair
-	targetKlineType model.KlineType
+	ch              chan entity.Kline
+	pair            entity.Pair
+	targetKlineType entity.KlineType
 	cronJob         *cron.Cron
 
 	cacheKlineClose int
 }
 
-func NewKlineProvider(ctx context.Context, pair model.Pair, target model.KlineType) domain.KlineProvideServer {
+func NewKlineProvider(ctx context.Context, pair entity.Pair, target entity.KlineType) domain.KlineProvideServer {
 	p := &klineProvider{
 		l:               logs.Get(ctx).WithField("server", "mock kline provider"),
-		ch:              make(chan model.Kline, 10),
+		ch:              make(chan entity.Kline, 10),
 		pair:            pair,
 		targetKlineType: target,
 		cacheKlineClose: 100,
@@ -40,7 +40,7 @@ func NewKlineProvider(ctx context.Context, pair model.Pair, target model.KlineTy
 	return p
 }
 
-func (p *klineProvider) Connect(ctx context.Context, requiredKlineInitCount int) (<-chan model.Kline, error) {
+func (p *klineProvider) Connect(ctx context.Context, requiredKlineInitCount int) (<-chan entity.Kline, error) {
 	p.cronJob.Run()
 	return p.ch, nil
 }
@@ -57,7 +57,7 @@ func (p *klineProvider) publishKline() {
 	p.ch <- k
 }
 
-func randomKline(p model.Pair, t model.KlineType, open int) model.Kline {
+func randomKline(p entity.Pair, t entity.KlineType, open int) entity.Kline {
 	closeThreshold := 30
 	maxThreshold := 50
 	minThreshold := 50
@@ -68,7 +68,7 @@ func randomKline(p model.Pair, t model.KlineType, open int) model.Kline {
 	mini := min(open, close) - rand.Intn(minThreshold)
 	vol := rand.Intn(volThreshold)
 
-	return model.Kline{
+	return entity.Kline{
 		Pair:       p,
 		MaxPrice:   decimal.Require(strconv.Itoa(maxi)),
 		MinPrice:   decimal.Require(strconv.Itoa(mini)),

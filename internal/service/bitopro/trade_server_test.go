@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"main/internal/model"
+	"main/internal/entity"
 	"main/pkg/infra"
 
 	"github.com/stretchr/testify/suite"
@@ -20,13 +20,13 @@ type TradeServerSuite struct {
 	suite.Suite
 	ctx  context.Context
 	l    logs.Logger
-	pair model.Pair
+	pair entity.Pair
 }
 
 func (su *TradeServerSuite) SetupSuite() {
 	su.ctx = context.Background()
 	su.Require().NoError(infra.Init("config-test"))
-	su.pair = model.NewPair("usdt", "twd")
+	su.pair = entity.NewPair("usdt", "twd")
 	su.l = logs.New(logs.LevelDebug)
 }
 
@@ -39,12 +39,12 @@ func (su *TradeServerSuite) TestCreateAndCancelOrder() {
 	su.Require().NotNil(acc)
 	defer server.Disconnect(su.ctx)
 
-	acc, err = server.PushOrder(su.ctx, model.Order{
+	acc, err = server.PushOrder(su.ctx, entity.Order{
 		Pair:   su.pair,
-		Type:   model.OrderTypeLimit,
-		Action: model.OrderActionBuy,
+		Type:   entity.OrderTypeLimit,
+		Action: entity.OrderActionBuy,
 		Price:  "0.001",
-		Amount: model.Amount{
+		Amount: entity.Amount{
 			Total: "10",
 		},
 	})
@@ -56,7 +56,7 @@ func (su *TradeServerSuite) TestCreateAndCancelOrder() {
 
 	select {
 	case o := <-ch:
-		o.Action = model.OrderActionCancelBuy
+		o.Action = entity.OrderActionCancelBuy
 		su.l.Infof("consume order: %+v", o)
 		acc, err = server.PushOrder(su.ctx, o)
 		su.NoError(err)
@@ -74,12 +74,12 @@ func (su *TradeServerSuite) TestCancelOrderInTheBeginning() {
 		_, _, err := server.Connect(su.ctx)
 		su.Require().NoError(err)
 
-		_, err = server.PushOrder(su.ctx, model.Order{
+		_, err = server.PushOrder(su.ctx, entity.Order{
 			Pair:   su.pair,
-			Type:   model.OrderTypeLimit,
-			Action: model.OrderActionBuy,
+			Type:   entity.OrderTypeLimit,
+			Action: entity.OrderActionBuy,
 			Price:  "0.001",
-			Amount: model.Amount{
+			Amount: entity.Amount{
 				Total: "10",
 			},
 		})
@@ -98,7 +98,7 @@ func (su *TradeServerSuite) TestCancelOrderInTheBeginning() {
 
 		select {
 		case o := <-ch:
-			o.Action = model.OrderActionCancelBuy
+			o.Action = entity.OrderActionCancelBuy
 			su.l.Infof("consume order: %+v", o)
 			server.PushOrder(su.ctx, o)
 			su.NoError(err)

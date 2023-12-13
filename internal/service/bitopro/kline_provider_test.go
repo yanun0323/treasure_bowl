@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"main/internal/model"
+	"main/internal/entity"
 	"main/pkg/infra"
 
 	"github.com/stretchr/testify/suite"
@@ -26,7 +26,7 @@ func (su *KlineProviderSuite) SetupSuite() {
 }
 
 func (su *KlineProviderSuite) TestKlineProvider() {
-	p, err := NewKlineProvider(su.ctx, model.NewPair("BTC", "TWD"), model.K1m)
+	p, err := NewKlineProvider(su.ctx, entity.NewPair("BTC", "TWD"), entity.K1m)
 	su.Require().NoError(err)
 
 	ch, err := p.Connect(su.ctx, 10)

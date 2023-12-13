@@ -5,14 +5,14 @@ import (
 	"errors"
 
 	"main/internal/domain"
-	"main/internal/model"
+	"main/internal/entity"
 
 	"github.com/yanun0323/pkg/logs"
 )
 
 type exchangeFollowerBot struct {
 	l         logs.Logger
-	pair      model.Pair
+	pair      entity.Pair
 	kpsSource domain.KlineProvideServer
 	kpsTarget domain.KlineProvideServer
 	ts        domain.TradeServer
@@ -40,7 +40,7 @@ func (p *ExchangeFollowerProvider) Validate() error {
 	return nil
 }
 
-func NewExchangeFollowerBot(ctx context.Context, pr model.Pair, pd ExchangeFollowerProvider) (domain.StrategyBot, error) {
+func NewExchangeFollowerBot(ctx context.Context, pr entity.Pair, pd ExchangeFollowerProvider) (domain.StrategyBot, error) {
 	return &exchangeFollowerBot{
 		l:         logs.Get(ctx).WithField("server", "exchange follower bot"),
 		pair:      pr,

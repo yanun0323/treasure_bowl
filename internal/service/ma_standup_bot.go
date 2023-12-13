@@ -4,19 +4,19 @@ import (
 	"context"
 
 	"main/internal/domain"
-	"main/internal/model"
+	"main/internal/entity"
 
 	"github.com/yanun0323/pkg/logs"
 )
 
 type maStandupBot struct {
 	l    logs.Logger
-	pair model.Pair
+	pair entity.Pair
 	kps  domain.KlineProvideServer
 	ts   domain.TradeServer
 }
 
-func NewMaStandupBot(ctx context.Context, pr model.Pair, pd StdBotProvider) (domain.StrategyBot, error) {
+func NewMaStandupBot(ctx context.Context, pr entity.Pair, pd StdBotProvider) (domain.StrategyBot, error) {
 	return &maStandupBot{
 		l:    logs.Get(ctx).WithField("server", "ma standup bot"),
 		pair: pr,
