@@ -14,6 +14,9 @@ import (
 	"main/internal/service/mock"
 	"main/internal/util"
 
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	"github.com/spf13/viper"
 	"github.com/yanun0323/pkg/logs"
 )
 
@@ -205,6 +208,10 @@ func Run() {
 		}
 	}()
 
+	go func() {
+		l.Fatal(registerBotHttpRouter(bot))
+	}()
+
 	/* Graceful shutdown */
 	sigterm := make(chan os.Signal, 1)
 	signal.Notify(sigterm, syscall.SIGINT, syscall.SIGTERM)
@@ -213,4 +220,22 @@ func Run() {
 	if err := bot.Shutdown(ctx); err != nil {
 		l.WithError(err).Fatal("shutdown server")
 	}
+}
+
+func registerBotHttpRouter(bot domain.StrategyBot) error {
+	e := echo.New()
+	entry := e.Group("/strategy_bot", middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(100)))
+
+	entry.GET("/info", bot.GetInfo)
+
+	port := ":8080"
+	if p := viper.GetString("server.port"); len(p) != 0 {
+		port = p
+	}
+
+	if port[0] != ':' {
+		port = ":" + port
+	}
+
+	return e.Start(port)
 }

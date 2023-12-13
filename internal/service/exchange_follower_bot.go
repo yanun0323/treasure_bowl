@@ -7,6 +7,7 @@ import (
 	"main/internal/domain"
 	"main/internal/entity"
 
+	"github.com/labstack/echo/v4"
 	"github.com/yanun0323/pkg/logs"
 )
 
@@ -59,5 +60,9 @@ func (bot *exchangeFollowerBot) Run(ctx context.Context) error {
 }
 
 func (bot *exchangeFollowerBot) Shutdown(ctx context.Context) error {
+	return nil
+}
+
+func (bot *exchangeFollowerBot) GetInfo(c echo.Context) error {
 	return nil
 }

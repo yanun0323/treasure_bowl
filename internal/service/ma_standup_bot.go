@@ -6,6 +6,7 @@ import (
 	"main/internal/domain"
 	"main/internal/entity"
 
+	"github.com/labstack/echo/v4"
 	"github.com/yanun0323/pkg/logs"
 )
 
@@ -34,5 +35,9 @@ func (bot *maStandupBot) Run(ctx context.Context) error {
 }
 
 func (bot *maStandupBot) Shutdown(ctx context.Context) error {
+	return nil
+}
+
+func (bot *maStandupBot) GetInfo(c echo.Context) error {
 	return nil
 }
