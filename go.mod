@@ -3,6 +3,7 @@ module main
 go 1.21
 
 require (
+	github.com/binance/binance-connector-go v0.5.2
 	github.com/bitoex/bitopro-api-go v1.3.9
 	github.com/labstack/echo/v4 v4.11.3
 	github.com/pkg/errors v0.9.1
@@ -15,6 +16,7 @@ require (
 )
 
 require (
+	github.com/bitly/go-simplejson v0.5.0 // indirect
 	github.com/buger/jsonparser v1.1.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect

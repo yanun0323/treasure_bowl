@@ -7,9 +7,12 @@ import (
 	"context"
 	"main/internal/domain"
 	"main/internal/entity"
+
+	"github.com/yanun0323/pkg/logs"
 )
 
 type tradeServer struct {
+	l logs.Logger
 }
 
 func NewTradeServer(ctx context.Context, pr entity.Pair) (domain.TradeServer, error) {
