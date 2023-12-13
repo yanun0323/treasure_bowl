@@ -20,17 +20,17 @@ func (s KlineSource) IsUnknown() bool {
 }
 
 type Kline struct {
-	Pair   Pair
-	Type   KlineType
-	Source KlineSource
+	Pair   Pair        `json:"pair"`
+	Type   KlineType   `json:"type"`
+	Source KlineSource `json:"source"`
 
-	OpenPrice  decimal.Decimal
-	ClosePrice decimal.Decimal
-	MaxPrice   decimal.Decimal
-	MinPrice   decimal.Decimal
-	Volume     decimal.Decimal
+	OpenPrice  decimal.Decimal `json:"open_price"`
+	ClosePrice decimal.Decimal `json:"close_price"`
+	MaxPrice   decimal.Decimal `json:"max_price"`
+	MinPrice   decimal.Decimal `json:"min_price"`
+	Volume     decimal.Decimal `json:"volume"`
 
-	Timestamp int64 /* end at (unix second) */
+	Timestamp int64 `json:"timestamp"` /* end at (unix second) */
 }
 
 func (k *Kline) IsTypeEqual(kk *Kline) bool {

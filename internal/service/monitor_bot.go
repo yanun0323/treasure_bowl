@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"net/http"
 
 	"main/internal/domain"
 	"main/internal/entity"
@@ -99,6 +100,19 @@ func (bot *inspectorBot) Shutdown(ctx context.Context) error {
 	return nil
 }
 
+type inspectorBotResponse struct {
+	data []*entity.Kline
+}
+
 func (bot *inspectorBot) GetInfo(c echo.Context) error {
-	return nil
+	resp := inspectorBotResponse{
+		data: make([]*entity.Kline, 0, bot.tree.Len()),
+	}
+
+	bot.tree.Ascend(func(i int64, k *entity.Kline) bool {
+		resp.data = append(resp.data, k)
+		return true
+	})
+
+	return c.JSON(http.StatusOK, resp)
 }
