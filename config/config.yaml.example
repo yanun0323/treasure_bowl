@@ -7,3 +7,6 @@ api:
     key: key
     secret: secret
     email: email
+  binance:
+    key: key
+    secret: secret
