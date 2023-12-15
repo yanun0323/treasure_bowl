@@ -70,8 +70,8 @@ func randomKline(p entity.Pair, t entity.KlineType, open int) entity.Kline {
 
 	return entity.Kline{
 		Pair:       p,
-		MaxPrice:   decimal.Require(strconv.Itoa(maxi)),
-		MinPrice:   decimal.Require(strconv.Itoa(mini)),
+		HighPrice:  decimal.Require(strconv.Itoa(maxi)),
+		LowPrice:   decimal.Require(strconv.Itoa(mini)),
 		OpenPrice:  decimal.Require(strconv.Itoa(open)),
 		ClosePrice: decimal.Require(strconv.Itoa(close)),
 		Volume:     decimal.Require(strconv.Itoa(vol)),

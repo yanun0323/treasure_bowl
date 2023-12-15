@@ -26,8 +26,8 @@ type Kline struct {
 
 	OpenPrice  decimal.Decimal `json:"open_price"`
 	ClosePrice decimal.Decimal `json:"close_price"`
-	MaxPrice   decimal.Decimal `json:"max_price"`
-	MinPrice   decimal.Decimal `json:"min_price"`
+	HighPrice  decimal.Decimal `json:"high_price"`
+	LowPrice   decimal.Decimal `json:"low_price"`
 	Volume     decimal.Decimal `json:"volume"`
 
 	Timestamp int64 `json:"timestamp"` /* end at (unix second) */
@@ -47,7 +47,7 @@ func (k *Kline) IsEqual(kk *Kline) bool {
 func (k Kline) String() string {
 	return fmt.Sprintf("%s %s %d, ohlc: %s %s %s %s ",
 		k.Pair.Uppercase("_"), k.Type.String(), k.Timestamp,
-		k.OpenPrice, k.MaxPrice, k.MinPrice, k.ClosePrice,
+		k.OpenPrice, k.HighPrice, k.LowPrice, k.ClosePrice,
 	)
 }
 
@@ -57,8 +57,8 @@ func (k *Kline) Update(kk *Kline) {
 	k.Source = kk.Source
 	k.OpenPrice = kk.OpenPrice
 	k.ClosePrice = kk.ClosePrice
-	k.MaxPrice = kk.MaxPrice
-	k.MinPrice = kk.MinPrice
+	k.HighPrice = kk.HighPrice
+	k.LowPrice = kk.LowPrice
 	k.Volume = kk.Volume
 	k.Timestamp = kk.Timestamp
 }

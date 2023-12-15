@@ -71,11 +71,13 @@ func NewKlineProvider(ctx context.Context, pair entity.Pair, target entity.Kline
 func (p *klineProvider) Connect(ctx context.Context, requiredKlineInitCount int) (<-chan entity.Kline, error) {
 	result, err := p.requestKline(context.Background(), requiredKlineInitCount)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "request kline")
 	}
+
 	if len(p.ch) == 0 {
 		p.ch = make(chan entity.Kline, len(result)*2)
 	}
+
 	for i := range result {
 		p.ch <- result[i]
 	}
@@ -167,8 +169,8 @@ func (d *OHLCKlineData) Kline(p entity.Pair, t entity.KlineType) entity.Kline {
 		Source:     entity.KlineSourceBitoPro,
 		OpenPrice:  d.Open,
 		ClosePrice: d.Close,
-		MaxPrice:   d.High,
-		MinPrice:   d.Low,
+		HighPrice:  d.High,
+		LowPrice:   d.Low,
 		Volume:     d.Volume,
 		Timestamp:  d.Timestamp / 1000,
 	}
