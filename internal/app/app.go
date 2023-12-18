@@ -6,6 +6,7 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
 	"main/internal/domain"
 	"main/internal/entity"
@@ -22,25 +23,27 @@ import (
 
 const (
 	/* ENV KEY */
-	_keyPair     = "PAIR"
-	_keyStrategy = "STG"
+	_keyPair                  = "PAIR"
+	_keyStrategy              = "STG"
+	_keyProviderKline         = "KLINE"
+	_keyProviderTrade         = "TRADE"
+	_keyProviderKlineDuration = "KLINE_DURATION"
+	_keyBackTestingToggle     = "BT"
+	_keyBackTestingStart      = "BT_START"
+	_keyBackTestingEnd        = "BT_END"
 
 	/* Strategy Value */
 	_strategyMaStandup        = "standup"
 	_strategyExchangeFollower = "follow"
 	_strategyInspector        = "inspector"
 
-	/* Provider Key */
-	_keyProviderKline = "KLINE"
-	_keyProviderTrade = "TRADE"
-
 	/* Provider Value */
 	_providerMock    = "mock"
 	_providerBitopro = "bitopro"
 	_providerBinance = "binance"
 
-	/* Provider Param Key */
-	_keyProviderKlineDuration = "KLINE_DURATION"
+	/* Setting */
+	_timeLayout = "2006-01-02"
 )
 
 func Run() {
@@ -87,6 +90,28 @@ func Run() {
 		l.Fatalf("unsupported kline duration '%s'", dr)
 	}
 
+	isBt := (strings.ToLower(os.Getenv(_keyBackTestingToggle)) == "true")
+	var (
+		btStart, btEnd time.Time
+	)
+
+	if isBt {
+		btStartStr := os.Getenv(_keyBackTestingStart)
+		bs, err := time.Parse(_timeLayout, btStartStr)
+		if err != nil {
+			l.WithError(err).Fatalf("back testing start time format should be: %s, but get: %s", _timeLayout, btStartStr)
+		}
+
+		btEndStr := os.Getenv(_keyBackTestingEnd)
+		be, err := time.Parse(_timeLayout, btEndStr)
+		if err != nil {
+			l.WithError(err).Fatalf("back testing end time format should be: %s, but get: %s", _timeLayout, btEndStr)
+		}
+
+		btStart = bs
+		btEnd = be
+	}
+
 	l.Info("pair: ", pr)
 	l.Info("strategy: ", stg)
 	l.Info("kline: ", kls)
@@ -119,6 +144,10 @@ func Run() {
 	}
 
 	for _, td := range strings.Split(tds, ",") {
+		if isBt {
+			td = _providerMock
+		}
+
 		switch td {
 		case _providerMock:
 			t, err := mock.NewTradeServer(ctx, pair, entity.OrderTypeLimit, entity.OrderTypeMarket)
@@ -196,6 +225,13 @@ func Run() {
 
 	if bot == nil {
 		l.Fatal("nil bot")
+	}
+
+	if isBt {
+		if err := bot.BackTesting(ctx, btStart, btEnd); err != nil {
+			l.WithError(err).Fatal("bot back testing")
+		}
+		return
 	}
 
 	if err := bot.Init(ctx); err != nil {
