@@ -50,6 +50,11 @@ func (p *klineProvider) Disconnect(ctx context.Context) error {
 	return nil
 }
 
+func (p *klineProvider) History(ctx context.Context, start, end time.Time) (<-chan entity.Kline, error) {
+	// TODO: Implement Kline Provider History
+	return nil, nil
+}
+
 func (p *klineProvider) publishKline() {
 	k := randomKline(p.pair, p.targetKlineType, p.cacheKlineClose)
 	i, _ := strconv.Atoi(k.ClosePrice.String())

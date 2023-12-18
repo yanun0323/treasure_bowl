@@ -5,6 +5,7 @@ STG=inspector
 KLINE=bitopro,mock
 KLINE_DURATION=1m
 TRADE=mock
+BACK_TESTING=true
 
 run:
 	PAIR=${PAIR} \
@@ -12,4 +13,5 @@ run:
 	KLINE=${KLINE} \
 	KLINE_DURATION=${KLINE_DURATION} \
 	TRADE=${TRADE} \
+	BACK_TESTING=${BACK_TESTING} \
 	go run ${CURDIR}/main.go

@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"main/internal/domain"
 	"main/internal/entity"
@@ -115,4 +116,9 @@ func (bot *inspectorBot) GetInfo(c echo.Context) error {
 	})
 
 	return c.JSON(http.StatusOK, resp)
+}
+
+func (bot *inspectorBot) BackTesting(ctx context.Context, start, end time.Time) error {
+	// TODO: Implement Bot Back Testing
+	return nil
 }

@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"time"
 
 	"main/internal/domain"
 	"main/internal/entity"
@@ -60,6 +61,11 @@ func (bot *exchangeFollowerBot) Run(ctx context.Context) error {
 }
 
 func (bot *exchangeFollowerBot) Shutdown(ctx context.Context) error {
+	return nil
+}
+
+func (bot *exchangeFollowerBot) BackTesting(ctx context.Context, start, end time.Time) error {
+	// TODO: Implement Bot Back Testing
 	return nil
 }
 

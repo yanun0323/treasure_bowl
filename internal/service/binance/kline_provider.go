@@ -86,6 +86,11 @@ func (p *klineProvider) Disconnect(ctx context.Context) error {
 	return nil
 }
 
+func (p *klineProvider) History(ctx context.Context, start, end time.Time) (<-chan entity.Kline, error) {
+	// TODO: Implement Kline Provider History
+	return nil, nil
+}
+
 func (p *klineProvider) requestKline(ctx context.Context, count int) ([]entity.Kline, error) {
 	c, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()

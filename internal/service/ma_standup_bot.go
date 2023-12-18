@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"main/internal/domain"
 	"main/internal/entity"
@@ -39,5 +40,10 @@ func (bot *maStandupBot) Shutdown(ctx context.Context) error {
 }
 
 func (bot *maStandupBot) GetInfo(c echo.Context) error {
+	return nil
+}
+
+func (bot *maStandupBot) BackTesting(ctx context.Context, start, end time.Time) error {
+	// TODO: Implement Bot Back Testing
 	return nil
 }
