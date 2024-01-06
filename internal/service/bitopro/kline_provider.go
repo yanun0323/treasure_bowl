@@ -12,7 +12,6 @@ import (
 
 	"main/internal/domain"
 	"main/internal/entity"
-	"main/internal/util"
 
 	"github.com/pkg/errors"
 	"github.com/robfig/cron"
@@ -41,12 +40,12 @@ var (
 )
 
 type klineProvider struct {
-	l               logs.Logger
-	ch              chan entity.Kline
-	pair            entity.Pair
-	targetKlineType entity.KlineType
-	cronJob         *cron.Cron
-	startAt         int64
+	l       logs.Logger
+	ch      chan entity.Kline
+	pair    entity.Pair
+	kt      entity.KlineType
+	cronJob *cron.Cron
+	startAt int64
 }
 
 func NewKlineProvider(ctx context.Context, pair entity.Pair, target entity.KlineType) (domain.KlineProvideServer, error) {
@@ -54,24 +53,40 @@ func NewKlineProvider(ctx context.Context, pair entity.Pair, target entity.Kline
 		return nil, errors.New(fmt.Sprintf("unsupported kline type: %s", target.String()))
 	}
 	p := &klineProvider{
-		l:               logs.Get(ctx).WithField("server", "bitopro kline"),
-		pair:            pair,
-		targetKlineType: target,
-		cronJob:         cron.New(),
-		startAt:         time.Now().Unix(),
+		l:       logs.Get(ctx).WithField("server", "bitopro kline"),
+		pair:    pair,
+		kt:      target,
+		cronJob: cron.New(),
+		startAt: time.Now().Unix(),
 	}
 
-	p.cronJob.AddFunc(util.CronSpec(), func() {
+	// FIXME: fix the cron spec
+	p.cronJob.AddFunc("* * * * * *", func() {
 		p.publishKline(ctx)
 	})
 
 	return p, nil
 }
 
-func (p *klineProvider) Connect(ctx context.Context, requiredKlineInitCount int) (<-chan entity.Kline, error) {
-	result, err := p.requestKline(context.Background(), requiredKlineInitCount)
-	if err != nil {
-		return nil, errors.Wrap(err, "request kline")
+func (p *klineProvider) Connect(ctx context.Context, spans ...entity.Span) (<-chan entity.Kline, error) {
+	keep := false
+	if len(spans) == 0 {
+		spans = append(spans, p.kt.SpanDefault())
+		keep = true
+	}
+
+	var (
+		result []entity.Kline
+		count  int
+	)
+
+	for _, span := range spans {
+		kls, err := p.requestKline(ctx, span)
+		if err != nil {
+			return nil, errors.Wrap(err, "request kline")
+		}
+		count += len(kls)
+		result = append(result, kls...)
 	}
 
 	if len(p.ch) == 0 {
@@ -82,7 +97,9 @@ func (p *klineProvider) Connect(ctx context.Context, requiredKlineInitCount int)
 		p.ch <- result[i]
 	}
 
-	p.cronJob.Start()
+	if keep {
+		p.cronJob.Start()
+	}
 	return p.ch, nil
 }
 
@@ -91,16 +108,11 @@ func (p *klineProvider) Disconnect(ctx context.Context) error {
 	return nil
 }
 
-func (p *klineProvider) History(ctx context.Context, start, end time.Time) (<-chan entity.Kline, error) {
-	// TODO: Implement Kline Provider History
-	return nil, nil
-}
-
-func (p *klineProvider) requestKline(ctx context.Context, count int) ([]entity.Kline, error) {
+func (p *klineProvider) requestKline(ctx context.Context, span entity.Span) ([]entity.Kline, error) {
 	c, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 
-	r, err := http.NewRequestWithContext(c, http.MethodGet, p.getApiPath(count), nil)
+	r, err := http.NewRequestWithContext(c, http.MethodGet, p.getApiPath(span), nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "new request")
 	}
@@ -123,13 +135,13 @@ func (p *klineProvider) requestKline(ctx context.Context, count int) ([]entity.K
 
 	result := make([]entity.Kline, 0, len(ohlc.Data))
 	for _, data := range ohlc.Data {
-		result = append(result, data.Kline(p.pair, p.targetKlineType))
+		result = append(result, data.Kline(p.pair, p.kt))
 	}
 	return result, nil
 }
 
 func (p *klineProvider) publishKline(ctx context.Context) {
-	result, err := p.requestKline(ctx, 5)
+	result, err := p.requestKline(ctx, p.kt.Span(5))
 	if err != nil {
 		p.l.WithError(err).Error("request kline")
 		return
@@ -140,18 +152,14 @@ func (p *klineProvider) publishKline(ctx context.Context) {
 	}
 }
 
-func (p *klineProvider) getApiPath(klineCount int) string {
-	to := time.Now()
-	d := p.targetKlineType.Duration(to.Unix())
-	from := to.Add(time.Duration(klineCount) * d)
-
+func (p *klineProvider) getApiPath(span entity.Span) string {
 	return fmt.Sprintf("%s%s%s?resolution=%s&from=%d&to=%d",
 		_restfulHost,
 		_klineUrl,
 		p.pair.Uppercase("_"),
-		_klineTypeTrans[p.targetKlineType],
-		from.Unix(),
-		to.Unix())
+		_klineTypeTrans[p.kt],
+		span.Start.Unix(),
+		span.End.Unix())
 }
 
 type OHLC struct {

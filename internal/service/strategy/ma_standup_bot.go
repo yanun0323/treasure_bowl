@@ -1,4 +1,4 @@
-package service
+package strategy
 
 import (
 	"context"
@@ -8,14 +8,19 @@ import (
 	"main/internal/entity"
 
 	"github.com/labstack/echo/v4"
+	"github.com/yanun0323/decimal"
+	"github.com/yanun0323/gollection/v2"
 	"github.com/yanun0323/pkg/logs"
 )
 
 type maStandupBot struct {
-	l    logs.Logger
-	pair entity.Pair
-	kps  domain.KlineProvideServer
-	ts   domain.TradeServer
+	l          logs.Logger
+	pair       entity.Pair
+	kps        domain.KlineProvideServer
+	ts         domain.TradeServer
+	confidence struct {
+		c1w, c1d, c4h, c1h gollection.BTree[decimal.Decimal, struct{}]
+	}
 }
 
 func NewMaStandupBot(ctx context.Context, pr entity.Pair, pd StdBotProvider) (domain.StrategyBot, error) {

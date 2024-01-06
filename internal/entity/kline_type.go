@@ -67,7 +67,54 @@ func (t KlineType) String() string {
 	return ""
 }
 
-func (t KlineType) duration() time.Duration {
+func (t KlineType) Spec() string {
+	switch t {
+	case K1m:
+		return "5 * * * * *"
+	case K3m:
+		return "5 * * * * *"
+	case K5m:
+		return "5 * * * * *"
+	case K15m:
+		return "5 * * * * *"
+	case K30m:
+		return "5 * * * * *"
+	case K1h:
+		return "5 0 * * * *"
+	case K2h:
+		return "5 0 * * * *"
+	case K4h:
+		return "5 0 * * * *"
+	case K6h:
+		return "5 0 * * * *"
+	case K8h:
+		return "5 0 * * * *"
+	case K12h:
+		return "5 0 * * * *"
+	case K1d:
+		return "5 0 * * * *"
+	case K1w:
+		return "5 0 0 * * *"
+	case K1M:
+		return "5 0 0 * * *"
+
+	}
+	return "* * * * * *"
+}
+
+func (t KlineType) SpanDefault() Span {
+	return t.Span(100)
+}
+
+func (t KlineType) Span(count int) Span {
+	end := time.Now()
+	return Span{
+		Start: end.Add(-(t.Duration() * time.Duration(count))),
+		End:   end,
+	}
+}
+
+func (t KlineType) Duration() time.Duration {
 	switch t {
 	case K1m:
 		return time.Minute
@@ -101,10 +148,10 @@ func (t KlineType) duration() time.Duration {
 	return time.Minute
 }
 
-// Duration return the duration from start to end according to kline type
-func (t KlineType) Duration(end int64) time.Duration {
+// To returns the duration from start to end according to kline type
+func (t KlineType) To(end int64) time.Duration {
 	if t != K1M {
-		return time.Duration(end) - t.duration()
+		return time.Duration(end) - t.Duration()
 	}
 
 	ed := time.Unix(end, 0)

@@ -10,9 +10,9 @@ import (
 
 	"main/internal/domain"
 	"main/internal/entity"
-	"main/internal/service"
 	"main/internal/service/bitopro"
 	"main/internal/service/mock"
+	"main/internal/service/strategy"
 	"main/internal/util"
 
 	"github.com/labstack/echo/v4"
@@ -177,7 +177,7 @@ func Run() {
 			l.Fatal("require at least one trade provider")
 		}
 
-		pv := service.StdBotProvider{
+		pv := strategy.StdBotProvider{
 			Kline: kline[0],
 			Trade: trade[0],
 		}
@@ -185,7 +185,7 @@ func Run() {
 			l.WithError(err).Error("validate bot provider")
 		}
 
-		bot, err = service.NewMaStandupBot(ctx, pair, pv)
+		bot, err = strategy.NewMaStandupBot(ctx, pair, pv)
 		if err != nil {
 			l.WithError(err).Fatal("create ma standup bot")
 		}
@@ -198,7 +198,7 @@ func Run() {
 			l.Fatal("require at least one trade provider")
 		}
 
-		pv := service.ExchangeFollowerProvider{
+		pv := strategy.ExchangeFollowerProvider{
 			Source: kline[0],
 			Target: kline[1],
 			Trade:  trade[0],
@@ -207,7 +207,7 @@ func Run() {
 			l.WithError(err).Error("validate bot provider")
 		}
 
-		bot, err = service.NewExchangeFollowerBot(ctx, pair, pv)
+		bot, err = strategy.NewExchangeFollowerBot(ctx, pair, pv)
 		if err != nil {
 			l.WithError(err).Fatal("create exchange follower bot")
 		}
@@ -215,7 +215,7 @@ func Run() {
 		if len(kline) == 0 {
 			l.Fatal("require at least one kline provider")
 		}
-		bot, err = service.NewInspectorBot(ctx, pair, kline[0])
+		bot, err = strategy.NewInspectorBot(ctx, pair, kline[0])
 		if err != nil {
 			l.WithError(err).Fatal("create inspector bot")
 		}

@@ -8,7 +8,7 @@ import (
 	"context"
 	"main/internal/domain"
 	"main/internal/entity"
-	"main/internal/util"
+	"main/internal/entity/enum"
 	"time"
 
 	binance_connector "github.com/binance/binance-connector-go"
@@ -46,7 +46,7 @@ type klineProvider struct {
 	cronJob *cron.Cron
 }
 
-func NewKlineProvider(ctx context.Context, pr entity.Pair, target entity.KlineType) (domain.KlineProvideServer, error) {
+func NewKlineProvider(ctx context.Context, spec enum.CronSpec, pr entity.Pair, target entity.KlineType) (domain.KlineProvideServer, error) {
 	if _, ok := _klineTypeTrans[target]; !ok {
 		return nil, errors.Errorf("unsupported kline type: %s", target.String())
 	}
@@ -56,15 +56,16 @@ func NewKlineProvider(ctx context.Context, pr entity.Pair, target entity.KlineTy
 		kt:   target,
 	}
 
-	p.cronJob.AddFunc(util.CronSpec(), func() {
+	p.cronJob.AddFunc(spec.String(), func() {
 		p.publishKline(ctx)
 	})
 
 	return p, nil
 }
 
-func (p *klineProvider) Connect(ctx context.Context, requiredKlineInitCount int) (<-chan entity.Kline, error) {
-	kls, err := p.requestKline(ctx, requiredKlineInitCount)
+func (p *klineProvider) Connect(ctx context.Context, spans ...entity.Span) (<-chan entity.Kline, error) {
+	// TODO: Connect With Span
+	kls, err := p.requestKline(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "request kline")
 	}
@@ -86,12 +87,7 @@ func (p *klineProvider) Disconnect(ctx context.Context) error {
 	return nil
 }
 
-func (p *klineProvider) History(ctx context.Context, start, end time.Time) (<-chan entity.Kline, error) {
-	// TODO: Implement Kline Provider History
-	return nil, nil
-}
-
-func (p *klineProvider) requestKline(ctx context.Context, count int) ([]entity.Kline, error) {
+func (p *klineProvider) requestKline(ctx context.Context) ([]entity.Kline, error) {
 	c, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 
@@ -117,7 +113,7 @@ func (p *klineProvider) requestKline(ctx context.Context, count int) ([]entity.K
 }
 
 func (p *klineProvider) publishKline(ctx context.Context) {
-	kls, err := p.requestKline(ctx, 5)
+	kls, err := p.requestKline(ctx)
 	if err != nil {
 		p.l.WithError(err).Error("request kline")
 		return

@@ -1,4 +1,4 @@
-package service
+package strategy
 
 import (
 	"context"
@@ -34,7 +34,7 @@ func NewInspectorBot(ctx context.Context, pr entity.Pair, kps domain.KlineProvid
 }
 
 func (bot *inspectorBot) Init(ctx context.Context) error {
-	ch, err := bot.kps.Connect(ctx, bot.cap)
+	ch, err := bot.kps.Connect(ctx)
 	if err != nil {
 		return errors.Wrap(err, "inti bot")
 	}
