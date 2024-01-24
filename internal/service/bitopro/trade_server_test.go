@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"main/internal/entity"
+	"main/internal/util"
 	"main/pkg/infra"
 
 	"github.com/stretchr/testify/suite"
@@ -31,6 +32,10 @@ func (su *TradeServerSuite) SetupSuite() {
 }
 
 func (su *TradeServerSuite) TestCreateAndCancelOrder() {
+	if !util.CheckMoneySecurity() {
+		return
+	}
+
 	server, err := NewTradeServer(su.ctx, su.pair)
 	su.Require().NoError(err)
 
@@ -67,6 +72,9 @@ func (su *TradeServerSuite) TestCreateAndCancelOrder() {
 }
 
 func (su *TradeServerSuite) TestCancelOrderInTheBeginning() {
+	if !util.CheckMoneySecurity() {
+		return
+	}
 	server, err := NewTradeServer(su.ctx, su.pair)
 	su.Require().NoError(err)
 

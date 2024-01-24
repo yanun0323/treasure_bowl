@@ -19,3 +19,9 @@ run:
 	BT_START=${BT_START} \
 	BT_END=${BT_END} \
 	go run ${CURDIR}/main.go
+
+test:
+	go test --count=1 ./...
+
+test.money:
+	MODE=MONEY go test --count=1 ./...
